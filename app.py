@@ -721,35 +721,92 @@ with tab2:
         
         # M&A分析実行
         if st.button("🔍 M&A分析を実行", use_container_width=True):
+            import yfinance as yf
+            
             with st.spinner("分析中..."):
                 for code in watchlist:
                     try:
-                        result = ma.analyze_stock(code)
-                        if result:
-                            score = result.get("total_score", 0)
-                            
-                            if score >= 70:
-                                level = "🔴 緊急"
-                            elif score >= 50:
-                                level = "🟠 高"
-                            elif score >= 30:
-                                level = "🟡 中"
-                            else:
-                                level = "🟢 低"
-                            
-                            st.markdown(f"""
-                            <div class="spike-card">
-                                <div class="card-header">
-                                    <div class="ticker-name">{code}</div>
-                                    <div class="ratio-badge">{level}</div>
-                                </div>
-                                <div style="color: #aaa; font-size: 0.9rem;">
-                                    M&Aスコア: {score}点
-                                </div>
+                        # yfinanceでデータ取得
+                        symbol = f"{code}.T"
+                        ticker = yf.Ticker(symbol)
+                        info = ticker.info
+                        hist = ticker.history(period="1mo")
+                        
+                        # 基本情報取得
+                        name = info.get("shortName", info.get("longName", code))
+                        price = info.get("currentPrice", info.get("regularMarketPrice", 0))
+                        pbr = info.get("priceToBook", 0)
+                        market_cap = info.get("marketCap", 0)
+                        market_cap_oku = market_cap / 1e8 if market_cap else 0
+                        
+                        # 出来高情報
+                        if not hist.empty:
+                            current_vol = hist["Volume"].iloc[-1]
+                            avg_vol = hist["Volume"].mean()
+                            volume_ratio = current_vol / avg_vol if avg_vol > 0 else 1.0
+                        else:
+                            volume_ratio = 1.0
+                        
+                        # M&A分析実行
+                        result = ma.analyze_ma_potential(
+                            code=code,
+                            name=name,
+                            price=price,
+                            pbr=pbr,
+                            upside_pct=None,
+                            market_cap=market_cap_oku,
+                            volume_ratio=volume_ratio,
+                            turnover_pct=None,
+                            turnover_5d_pct=None,
+                            signal_icon="",
+                            skip_news=False  # ニュースも分析
+                        )
+                        
+                        score = result.total_score
+                        
+                        if score >= 70:
+                            level = "🔴 緊急"
+                            card_class = "high"
+                        elif score >= 50:
+                            level = "🟠 高"
+                            card_class = "medium"
+                        elif score >= 30:
+                            level = "🟡 中"
+                            card_class = ""
+                        else:
+                            level = "🟢 低"
+                            card_class = ""
+                        
+                        st.markdown(f"""
+                        <div class="spike-card {card_class}">
+                            <div class="card-header">
+                                <div class="ticker-name">{code} <span style="font-size: 0.8rem; color: #888;">{name[:15]}</span></div>
+                                <div class="ratio-badge" style="font-size: 1rem;">{level}</div>
                             </div>
-                            """, unsafe_allow_html=True)
+                            <div style="color: #aaa; font-size: 0.9rem; margin-top: 0.5rem;">
+                                <strong>M&Aスコア: {score}点</strong><br>
+                                📰 ニュース: {result.news_score}点 / 
+                                📊 出来高: {result.volume_score}点 / 
+                                💰 バリュエーション: {result.valuation_score}点<br>
+                                時価総額: {market_cap_oku:.0f}億円 / PBR: {pbr:.2f}倍
+                            </div>
+                        </div>
+                        """, unsafe_allow_html=True)
+                        
+                        # 検知キーワードがあれば表示
+                        if result.matched_keywords:
+                            st.markdown(f'<p style="color: #ff6b6b; font-size: 0.85rem; margin-left: 1rem;">🔑 キーワード: {", ".join(result.matched_keywords[:5])}</p>', unsafe_allow_html=True)
+                        
+                        # ニュースがあれば表示
+                        if result.news_items:
+                            with st.expander(f"📰 {code} のニュース（{len(result.news_items)}件）"):
+                                for news in result.news_items[:5]:
+                                    st.markdown(f"- [{news.title}]({news.url})")
+                        
                     except Exception as e:
-                        st.error(f"{code}: 分析エラー")
+                        st.error(f"{code}: 分析エラー - {str(e)}")
+                        
+                    time.sleep(0.5)  # API制限対策
     else:
         st.info("👆 銘柄コードを入力して監視リストに追加してください")
 
