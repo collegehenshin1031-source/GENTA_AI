@@ -40,8 +40,9 @@ st.markdown("""
 <style>
 #MainMenu, footer, header, .stDeployButton {display: none !important;}
 
+/* 背景：白ベース */
 div[data-testid="stAppViewContainer"] {
-    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%) !important;
+    background: linear-gradient(180deg, #FFFFFF 0%, #FFF5F5 100%) !important;
 }
 
 .main .block-container {
@@ -49,55 +50,61 @@ div[data-testid="stAppViewContainer"] {
     padding: 1rem 1rem 3rem 1rem !important;
 }
 
+/* タイトル：赤 */
 h1 {
     text-align: center !important;
     font-size: 1.6rem !important;
-    color: #4ecdc4 !important;
+    color: #C41E3A !important;
+    font-weight: 800 !important;
 }
 
 .subtitle {
     text-align: center;
-    color: #888;
+    color: #666;
     font-size: 0.8rem;
     margin-bottom: 1rem;
 }
 
+/* タブ */
 .stTabs [data-baseweb="tab-list"] {
     justify-content: center !important;
-    background-color: #2d2d44 !important;
+    background-color: #FFF !important;
     padding: 0.3rem !important;
     border-radius: 10px !important;
     margin-bottom: 1rem !important;
+    box-shadow: 0 2px 8px rgba(196, 30, 58, 0.1) !important;
 }
 
 .stTabs [data-baseweb="tab"] {
     padding: 0.5rem 1rem !important;
     border-radius: 6px !important;
     font-weight: 600 !important;
-    color: #888 !important;
+    color: #666 !important;
 }
 
 .stTabs [data-baseweb="tab"][aria-selected="true"] {
-    background: #4ecdc4 !important;
-    color: #1a1a2e !important;
+    background: linear-gradient(135deg, #C41E3A 0%, #E63946 100%) !important;
+    color: #FFF !important;
 }
 
+/* カード：白背景・赤ボーダー */
 .spike-card {
-    background: #2d2d44;
+    background: #FFFFFF;
     border-radius: 10px;
     padding: 0.9rem;
     margin-bottom: 0.6rem;
-    border-left: 4px solid #4ecdc4;
+    border-left: 4px solid #C41E3A;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
 }
 
 .spike-card.high {
-    border-left-color: #ff6b6b;
-    background: linear-gradient(90deg, rgba(255,107,107,0.12) 0%, #2d2d44 100%);
+    border-left-color: #C41E3A;
+    background: linear-gradient(90deg, rgba(196,30,58,0.08) 0%, #FFFFFF 100%);
 }
 
 .spike-card.medium {
-    border-left-color: #ffa94d;
-    background: linear-gradient(90deg, rgba(255,169,77,0.08) 0%, #2d2d44 100%);
+    border-left-color: #FFB347;
+    background: linear-gradient(90deg, rgba(255,179,71,0.08) 0%, #FFFFFF 100%);
 }
 
 .card-header {
@@ -110,20 +117,20 @@ h1 {
 .ticker-name {
     font-size: 1rem;
     font-weight: bold;
-    color: #fff;
+    color: #333;
 }
 
 .ticker-name a { color: inherit; text-decoration: none; }
-.ticker-name a:hover { color: #4ecdc4; }
+.ticker-name a:hover { color: #C41E3A; }
 
 .ratio-badge {
     font-size: 1.3rem;
     font-weight: bold;
 }
 
-.ratio-badge.high { color: #ff6b6b; }
-.ratio-badge.medium { color: #ffa94d; }
-.ratio-badge.normal { color: #4ecdc4; }
+.ratio-badge.high { color: #C41E3A; }
+.ratio-badge.medium { color: #FF8C00; }
+.ratio-badge.normal { color: #28a745; }
 
 .card-body {
     display: grid;
@@ -132,39 +139,52 @@ h1 {
     font-size: 0.8rem;
 }
 
-.info-label { color: #666; font-size: 0.7rem; }
-.info-value { color: #ccc; }
+.info-label { color: #888; font-size: 0.7rem; }
+.info-value { color: #333; }
 
+/* 統計ボックス */
 .stat-box {
-    background: #2d2d44;
+    background: #FFFFFF;
     border-radius: 10px;
     padding: 0.8rem;
     text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #F0F0F0;
 }
 
 .stat-value { font-size: 1.6rem; font-weight: bold; }
-.stat-value.high { color: #ff6b6b; }
-.stat-value.medium { color: #ffa94d; }
-.stat-value.total { color: #4ecdc4; }
-.stat-label { font-size: 0.7rem; color: #888; }
+.stat-value.high { color: #C41E3A; }
+.stat-value.medium { color: #FF8C00; }
+.stat-value.total { color: #C41E3A; }
+.stat-label { font-size: 0.7rem; color: #666; }
 
+/* ボタン：赤グラデーション */
 .stButton > button {
-    background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%) !important;
-    color: #1a1a2e !important;
+    background: linear-gradient(135deg, #C41E3A 0%, #E63946 100%) !important;
+    color: #FFF !important;
     font-weight: 600 !important;
     border: none !important;
     border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(196, 30, 58, 0.3) !important;
 }
 
-p, span, label, div { color: #ddd; }
+.stButton > button:hover {
+    background: linear-gradient(135deg, #A01830 0%, #C41E3A 100%) !important;
+}
 
+/* テキスト色 */
+p, span, label, div { color: #333; }
+
+/* 更新情報ボックス */
 .update-info {
     text-align: center;
     padding: 0.8rem;
-    background: #252540;
+    background: linear-gradient(135deg, #FFF5F5 0%, #FFFFFF 100%);
     border-radius: 8px;
     margin-bottom: 1rem;
     font-size: 0.8rem;
+    border: 1px solid #FFE0E0;
+    color: #333;
 }
 
 .cap-badge {
@@ -174,8 +194,36 @@ p, span, label, div { color: #ddd; }
     font-size: 0.65rem;
     margin-left: 4px;
 }
-.cap-badge.in { background: rgba(78,205,196,0.2); color: #4ecdc4; }
-.cap-badge.out { background: rgba(255,107,107,0.2); color: #ff6b6b; }
+.cap-badge.in { background: rgba(196,30,58,0.1); color: #C41E3A; }
+.cap-badge.out { background: rgba(128,128,128,0.1); color: #888; }
+
+/* チェックボックス */
+.stCheckbox label span { color: #333 !important; }
+
+/* ラジオボタン */
+.stRadio label span { color: #333 !important; }
+
+/* 入力フィールド */
+.stTextInput input {
+    background: #FFFFFF !important;
+    color: #333 !important;
+    border: 1px solid #DDD !important;
+}
+
+/* expander */
+.streamlit-expanderHeader {
+    background: #FFF5F5 !important;
+    color: #333 !important;
+}
+
+/* 設定セクション */
+.settings-section {
+    background: #FFFFFF;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #F0F0F0;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -282,7 +330,7 @@ def render_card(ticker: str, d: Dict, show_cap_badge: bool = False):
             <div class="ratio-badge {ratio_class}">{ratio}x</div>
         </div>
         <div class="card-body">
-            <div><span class="info-label">現在値</span><br><span class="info-value" style="color:#4ecdc4;">¥{d['price']:,.0f}</span></div>
+            <div><span class="info-label">現在値</span><br><span class="info-value" style="color:#C41E3A;font-weight:600;">¥{d['price']:,.0f}</span></div>
             <div><span class="info-label">時価総額</span><br><span class="info-value">{d['market_cap_oku']:,}億円{cap_badge}</span></div>
             <div><span class="info-label">当日出来高</span><br><span class="info-value">{d['volume']:,}</span></div>
             <div><span class="info-label">252日平均</span><br><span class="info-value">{d['avg_volume']:,}</span></div>
@@ -318,7 +366,7 @@ with tab1:
         
         # レジェンド
         st.markdown("""
-        <div style="display:flex;justify-content:center;gap:1.2rem;margin-bottom:0.8rem;font-size:0.75rem;color:#888;">
+        <div style="display:flex;justify-content:center;gap:1.2rem;margin-bottom:0.8rem;font-size:0.75rem;color:#666;">
             <span>🔴 3倍以上</span>
             <span>🟠 1.5倍以上</span>
         </div>
@@ -377,10 +425,10 @@ with tab1:
                         st.error("❌ 送信失敗。通知設定を確認してください。")
     else:
         st.markdown("""
-        <div style="text-align:center;padding:2rem;color:#888;">
+        <div style="text-align:center;padding:2rem;color:#666;">
             <p style="font-size:2.5rem;">📊</p>
             <p>データがありません</p>
-            <p style="font-size:0.8rem;">GitHub Actionsで初回実行してください</p>
+            <p style="font-size:0.8rem;color:#888;">GitHub Actionsで初回実行してください</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -390,7 +438,7 @@ with tab1:
 # ==========================================
 with tab2:
     st.markdown("### 🔔 メール通知設定")
-    st.markdown('<p style="color:#888;font-size:0.8rem;">出来高急動（1.5倍以上）を検知した際に通知を受け取れます</p>', unsafe_allow_html=True)
+    st.markdown('<p style="color:#666;font-size:0.8rem;">出来高急動（1.5倍以上）を検知した際に通知を受け取れます</p>', unsafe_allow_html=True)
     
     email = st.text_input("Gmailアドレス", value=st.session_state.get("email_address", ""), placeholder="example@gmail.com")
     app_password = st.text_input("アプリパスワード（16桁）", value=st.session_state.get("app_password", ""), type="password", placeholder="xxxx xxxx xxxx xxxx")
@@ -423,7 +471,7 @@ with tab2:
         """)
     
     st.markdown("""
-    <div style="background:#252540;border-radius:8px;padding:0.8rem;margin-top:1rem;font-size:0.75rem;color:#888;">
+    <div style="background:#FFF5F5;border-radius:8px;padding:0.8rem;margin-top:1rem;font-size:0.75rem;color:#666;border:1px solid #FFE0E0;">
         🔒 設定はあなたのブラウザにのみ保存されます
     </div>
     """, unsafe_allow_html=True)
