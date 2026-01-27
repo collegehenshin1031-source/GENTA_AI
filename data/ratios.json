@@ -1,11 +1,643 @@
 {
-  "updated_at": "初回実行待ち - Actionsから手動実行してください",
-  "date": "-",
+  "updated_at": "2026-01-27 16:30:27",
+  "date": "2026-01-27",
   "market_cap_range": "300億〜2000億円",
-  "total_count": 0,
-  "all_count": 0,
+  "total_count": 18,
+  "all_count": 52,
   "spike_high_count": 0,
   "spike_medium_count": 0,
-  "data": {},
-  "all_data": {}
+  "data": {
+    "4384.T": {
+      "name": "RAKSUL INC",
+      "volume": 802500,
+      "avg_volume": 590148,
+      "ratio": 1.36,
+      "price": 2010.0,
+      "market_cap_oku": 1165,
+      "in_cap_range": true
+    },
+    "6266.T": {
+      "name": "TAZMO CO LTD",
+      "volume": 233900,
+      "avg_volume": 247788,
+      "ratio": 0.94,
+      "price": 2653.0,
+      "market_cap_oku": 384,
+      "in_cap_range": true
+    },
+    "9166.T": {
+      "name": "GENDA INC",
+      "volume": 1844100,
+      "avg_volume": 2399571,
+      "ratio": 0.77,
+      "price": 723.0,
+      "market_cap_oku": 1341,
+      "in_cap_range": true
+    },
+    "4478.T": {
+      "name": "FREEE K K",
+      "volume": 323500,
+      "avg_volume": 435193,
+      "ratio": 0.74,
+      "price": 2918.0,
+      "market_cap_oku": 1738,
+      "in_cap_range": true
+    },
+    "3765.T": {
+      "name": "GUNGHO ONLINE ENTERTAINMENT",
+      "volume": 164800,
+      "avg_volume": 223519,
+      "ratio": 0.74,
+      "price": 2621.0,
+      "market_cap_oku": 1424,
+      "in_cap_range": true
+    },
+    "4565.T": {
+      "name": "NXERA PHARMA CO LTD",
+      "volume": 564200,
+      "avg_volume": 871670,
+      "ratio": 0.65,
+      "price": 819.0,
+      "market_cap_oku": 741,
+      "in_cap_range": true
+    },
+    "3932.T": {
+      "name": "AKATSUKI INC",
+      "volume": 39300,
+      "avg_volume": 61731,
+      "ratio": 0.64,
+      "price": 2619.0,
+      "market_cap_oku": 378,
+      "in_cap_range": true
+    },
+    "4431.T": {
+      "name": "SMAREGI INC",
+      "volume": 51600,
+      "avg_volume": 82000,
+      "ratio": 0.63,
+      "price": 2853.0,
+      "market_cap_oku": 550,
+      "in_cap_range": true
+    },
+    "4593.T": {
+      "name": "HEALIOS KK",
+      "volume": 3172700,
+      "avg_volume": 5404688,
+      "ratio": 0.59,
+      "price": 357.0,
+      "market_cap_oku": 412,
+      "in_cap_range": true
+    },
+    "4071.T": {
+      "name": "PLUS ALPHA CONSULTING CO LTD",
+      "volume": 159000,
+      "avg_volume": 287189,
+      "ratio": 0.55,
+      "price": 2331.0,
+      "market_cap_oku": 988,
+      "in_cap_range": true
+    },
+    "4180.T": {
+      "name": "APPIER GROUP INC",
+      "volume": 503000,
+      "avg_volume": 1009907,
+      "ratio": 0.5,
+      "price": 1071.0,
+      "market_cap_oku": 1090,
+      "in_cap_range": true
+    },
+    "3182.T": {
+      "name": "OISIX RA DAICHI INC",
+      "volume": 95900,
+      "avg_volume": 214804,
+      "ratio": 0.45,
+      "price": 1467.0,
+      "market_cap_oku": 510,
+      "in_cap_range": true
+    },
+    "4449.T": {
+      "name": "GIFTEE INC",
+      "volume": 167800,
+      "avg_volume": 438686,
+      "ratio": 0.38,
+      "price": 1351.0,
+      "market_cap_oku": 401,
+      "in_cap_range": true
+    },
+    "4475.T": {
+      "name": "HENNGE K K",
+      "volume": 270100,
+      "avg_volume": 797182,
+      "ratio": 0.34,
+      "price": 1207.0,
+      "market_cap_oku": 376,
+      "in_cap_range": true
+    },
+    "4480.T": {
+      "name": "MEDLEY INC",
+      "volume": 127700,
+      "avg_volume": 403054,
+      "ratio": 0.32,
+      "price": 2424.0,
+      "market_cap_oku": 749,
+      "in_cap_range": true
+    },
+    "4165.T": {
+      "name": "PLAID INC",
+      "volume": 228400,
+      "avg_volume": 1188457,
+      "ratio": 0.19,
+      "price": 797.0,
+      "market_cap_oku": 327,
+      "in_cap_range": true
+    },
+    "3655.T": {
+      "name": "BRAINPAD INC.",
+      "volume": 57900,
+      "avg_volume": 461010,
+      "ratio": 0.13,
+      "price": 2690.0,
+      "market_cap_oku": 562,
+      "in_cap_range": true
+    },
+    "4477.T": {
+      "name": "BASE INC",
+      "volume": 207100,
+      "avg_volume": 2711930,
+      "ratio": 0.08,
+      "price": 329.0,
+      "market_cap_oku": 379,
+      "in_cap_range": true
+    }
+  },
+  "all_data": {
+    "3697.T": {
+      "name": "SHIFT INC",
+      "volume": 6922900,
+      "avg_volume": 4750263,
+      "ratio": 1.46,
+      "price": 850.4,
+      "market_cap_oku": 2240,
+      "in_cap_range": false
+    },
+    "9558.T": {
+      "name": "JAPANIACE CO LTD",
+      "volume": 14400,
+      "avg_volume": 10306,
+      "ratio": 1.4,
+      "price": 2171.0,
+      "market_cap_oku": 86,
+      "in_cap_range": false
+    },
+    "4384.T": {
+      "name": "RAKSUL INC",
+      "volume": 802500,
+      "avg_volume": 590148,
+      "ratio": 1.36,
+      "price": 2010.0,
+      "market_cap_oku": 1165,
+      "in_cap_range": true
+    },
+    "3769.T": {
+      "name": "GMO PAYMENT GATEWAY INC",
+      "volume": 330200,
+      "avg_volume": 257273,
+      "ratio": 1.28,
+      "price": 9015.0,
+      "market_cap_oku": 6838,
+      "in_cap_range": false
+    },
+    "3923.T": {
+      "name": "RAKUS CO LTD",
+      "volume": 2117000,
+      "avg_volume": 1674738,
+      "ratio": 1.26,
+      "price": 936.8,
+      "market_cap_oku": 3378,
+      "in_cap_range": false
+    },
+    "4194.T": {
+      "name": "VISIONAL INC",
+      "volume": 253900,
+      "avg_volume": 208099,
+      "ratio": 1.22,
+      "price": 8680.0,
+      "market_cap_oku": 3484,
+      "in_cap_range": false
+    },
+    "4443.T": {
+      "name": "SANSAN INC",
+      "volume": 773200,
+      "avg_volume": 649413,
+      "ratio": 1.19,
+      "price": 1608.0,
+      "market_cap_oku": 2034,
+      "in_cap_range": false
+    },
+    "6890.T": {
+      "name": "FERROTEC CORPORATION",
+      "volume": 801900,
+      "avg_volume": 680153,
+      "ratio": 1.18,
+      "price": 6790.0,
+      "market_cap_oku": 3180,
+      "in_cap_range": false
+    },
+    "4582.T": {
+      "name": "SYMBIO PHARMACEUTICALS LTD",
+      "volume": 596600,
+      "avg_volume": 555949,
+      "ratio": 1.07,
+      "price": 89.0,
+      "market_cap_oku": 43,
+      "in_cap_range": false
+    },
+    "6323.T": {
+      "name": "RORZE CORP",
+      "volume": 2069800,
+      "avg_volume": 1991474,
+      "ratio": 1.04,
+      "price": 3608.0,
+      "market_cap_oku": 6257,
+      "in_cap_range": false
+    },
+    "3994.T": {
+      "name": "MONEY FORWARD INC",
+      "volume": 546400,
+      "avg_volume": 554353,
+      "ratio": 0.99,
+      "price": 4229.0,
+      "market_cap_oku": 2340,
+      "in_cap_range": false
+    },
+    "6266.T": {
+      "name": "TAZMO CO LTD",
+      "volume": 233900,
+      "avg_volume": 247788,
+      "ratio": 0.94,
+      "price": 2653.0,
+      "market_cap_oku": 384,
+      "in_cap_range": true
+    },
+    "3092.T": {
+      "name": "ZOZO INC",
+      "volume": 2560600,
+      "avg_volume": 2945434,
+      "ratio": 0.87,
+      "price": 1223.0,
+      "market_cap_oku": 10815,
+      "in_cap_range": false
+    },
+    "3656.T": {
+      "name": "KLAB INC",
+      "volume": 4490500,
+      "avg_volume": 5160184,
+      "ratio": 0.87,
+      "price": 354.0,
+      "market_cap_oku": 270,
+      "in_cap_range": false
+    },
+    "3132.T": {
+      "name": "MACNICA HOLDINGS INC",
+      "volume": 506600,
+      "avg_volume": 604946,
+      "ratio": 0.84,
+      "price": 2638.0,
+      "market_cap_oku": 4710,
+      "in_cap_range": false
+    },
+    "4054.T": {
+      "name": "JAPAN PROPTECH CO LTD",
+      "volume": 39400,
+      "avg_volume": 50688,
+      "ratio": 0.78,
+      "price": 652.0,
+      "market_cap_oku": 89,
+      "in_cap_range": false
+    },
+    "3064.T": {
+      "name": "MONOTARO CO.LTD",
+      "volume": 1394100,
+      "avg_volume": 1801432,
+      "ratio": 0.77,
+      "price": 2262.5,
+      "market_cap_oku": 11242,
+      "in_cap_range": false
+    },
+    "9166.T": {
+      "name": "GENDA INC",
+      "volume": 1844100,
+      "avg_volume": 2399571,
+      "ratio": 0.77,
+      "price": 723.0,
+      "market_cap_oku": 1341,
+      "in_cap_range": true
+    },
+    "4478.T": {
+      "name": "FREEE K K",
+      "volume": 323500,
+      "avg_volume": 435193,
+      "ratio": 0.74,
+      "price": 2918.0,
+      "market_cap_oku": 1738,
+      "in_cap_range": true
+    },
+    "3765.T": {
+      "name": "GUNGHO ONLINE ENTERTAINMENT",
+      "volume": 164800,
+      "avg_volume": 223519,
+      "ratio": 0.74,
+      "price": 2621.0,
+      "market_cap_oku": 1424,
+      "in_cap_range": true
+    },
+    "3659.T": {
+      "name": "NEXON CO LTD",
+      "volume": 1524800,
+      "avg_volume": 2060203,
+      "ratio": 0.74,
+      "price": 4281.0,
+      "market_cap_oku": 33879,
+      "in_cap_range": false
+    },
+    "7735.T": {
+      "name": "SCREEN HOLDINGS CO LTD",
+      "volume": 1116700,
+      "avg_volume": 1567504,
+      "ratio": 0.71,
+      "price": 19250.0,
+      "market_cap_oku": 18199,
+      "in_cap_range": false
+    },
+    "6146.T": {
+      "name": "DISCO CORPORATION",
+      "volume": 2974400,
+      "avg_volume": 4213006,
+      "ratio": 0.71,
+      "price": 68930.0,
+      "market_cap_oku": 74741,
+      "in_cap_range": false
+    },
+    "4565.T": {
+      "name": "NXERA PHARMA CO LTD",
+      "volume": 564200,
+      "avg_volume": 871670,
+      "ratio": 0.65,
+      "price": 819.0,
+      "market_cap_oku": 741,
+      "in_cap_range": true
+    },
+    "4587.T": {
+      "name": "PEPTIDREAM INC",
+      "volume": 528800,
+      "avg_volume": 807942,
+      "ratio": 0.65,
+      "price": 1640.0,
+      "market_cap_oku": 2119,
+      "in_cap_range": false
+    },
+    "3932.T": {
+      "name": "AKATSUKI INC",
+      "volume": 39300,
+      "avg_volume": 61731,
+      "ratio": 0.64,
+      "price": 2619.0,
+      "market_cap_oku": 378,
+      "in_cap_range": true
+    },
+    "4431.T": {
+      "name": "SMAREGI INC",
+      "volume": 51600,
+      "avg_volume": 82000,
+      "ratio": 0.63,
+      "price": 2853.0,
+      "market_cap_oku": 550,
+      "in_cap_range": true
+    },
+    "6315.T": {
+      "name": "TOWA CORP",
+      "volume": 3335800,
+      "avg_volume": 5266642,
+      "ratio": 0.63,
+      "price": 3090.0,
+      "market_cap_oku": 2318,
+      "in_cap_range": false
+    },
+    "4385.T": {
+      "name": "MERCARI INC",
+      "volume": 2503600,
+      "avg_volume": 3982417,
+      "ratio": 0.63,
+      "price": 3319.0,
+      "market_cap_oku": 5473,
+      "in_cap_range": false
+    },
+    "7095.T": {
+      "name": "MACBEE PLANET INC",
+      "volume": 112100,
+      "avg_volume": 179119,
+      "ratio": 0.63,
+      "price": 1520.0,
+      "market_cap_oku": 212,
+      "in_cap_range": false
+    },
+    "6035.T": {
+      "name": "IR JAPAN HOLDINGS LTD",
+      "volume": 55100,
+      "avg_volume": 89342,
+      "ratio": 0.62,
+      "price": 786.0,
+      "market_cap_oku": 140,
+      "in_cap_range": false
+    },
+    "3681.T": {
+      "name": "V-CUBE INC",
+      "volume": 223700,
+      "avg_volume": 374757,
+      "ratio": 0.6,
+      "price": 144.0,
+      "market_cap_oku": 37,
+      "in_cap_range": false
+    },
+    "4593.T": {
+      "name": "HEALIOS KK",
+      "volume": 3172700,
+      "avg_volume": 5404688,
+      "ratio": 0.59,
+      "price": 357.0,
+      "market_cap_oku": 412,
+      "in_cap_range": true
+    },
+    "4441.T": {
+      "name": "TOBILA SYSTEM INC",
+      "volume": 18400,
+      "avg_volume": 32274,
+      "ratio": 0.57,
+      "price": 1255.0,
+      "market_cap_oku": 127,
+      "in_cap_range": false
+    },
+    "4071.T": {
+      "name": "PLUS ALPHA CONSULTING CO LTD",
+      "volume": 159000,
+      "avg_volume": 287189,
+      "ratio": 0.55,
+      "price": 2331.0,
+      "market_cap_oku": 988,
+      "in_cap_range": true
+    },
+    "4751.T": {
+      "name": "CYBER AGENT",
+      "volume": 2085100,
+      "avg_volume": 3886612,
+      "ratio": 0.54,
+      "price": 1441.0,
+      "market_cap_oku": 7303,
+      "in_cap_range": false
+    },
+    "4180.T": {
+      "name": "APPIER GROUP INC",
+      "volume": 503000,
+      "avg_volume": 1009907,
+      "ratio": 0.5,
+      "price": 1071.0,
+      "market_cap_oku": 1090,
+      "in_cap_range": true
+    },
+    "6920.T": {
+      "name": "LASERTEC CORP",
+      "volume": 3465800,
+      "avg_volume": 6994732,
+      "ratio": 0.5,
+      "price": 36900.0,
+      "market_cap_oku": 33252,
+      "in_cap_range": false
+    },
+    "4583.T": {
+      "name": "CHIOME BIOSCIENCE INC",
+      "volume": 656500,
+      "avg_volume": 1315315,
+      "ratio": 0.5,
+      "price": 114.0,
+      "market_cap_oku": 78,
+      "in_cap_range": false
+    },
+    "2370.T": {
+      "name": "MEDINET CO LTD",
+      "volume": 590000,
+      "avg_volume": 1237613,
+      "ratio": 0.48,
+      "price": 31.0,
+      "market_cap_oku": 82,
+      "in_cap_range": false
+    },
+    "3182.T": {
+      "name": "OISIX RA DAICHI INC",
+      "volume": 95900,
+      "avg_volume": 214804,
+      "ratio": 0.45,
+      "price": 1467.0,
+      "market_cap_oku": 510,
+      "in_cap_range": true
+    },
+    "4436.T": {
+      "name": "MINKABU THE INFONOID INC",
+      "volume": 59300,
+      "avg_volume": 153897,
+      "ratio": 0.39,
+      "price": 450.0,
+      "market_cap_oku": 69,
+      "in_cap_range": false
+    },
+    "4449.T": {
+      "name": "GIFTEE INC",
+      "volume": 167800,
+      "avg_volume": 438686,
+      "ratio": 0.38,
+      "price": 1351.0,
+      "market_cap_oku": 401,
+      "in_cap_range": true
+    },
+    "4475.T": {
+      "name": "HENNGE K K",
+      "volume": 270100,
+      "avg_volume": 797182,
+      "ratio": 0.34,
+      "price": 1207.0,
+      "market_cap_oku": 376,
+      "in_cap_range": true
+    },
+    "4480.T": {
+      "name": "MEDLEY INC",
+      "volume": 127700,
+      "avg_volume": 403054,
+      "ratio": 0.32,
+      "price": 2424.0,
+      "market_cap_oku": 749,
+      "in_cap_range": true
+    },
+    "6560.T": {
+      "name": "LTS INC",
+      "volume": 5900,
+      "avg_volume": 25340,
+      "ratio": 0.23,
+      "price": 2082.0,
+      "market_cap_oku": 93,
+      "in_cap_range": false
+    },
+    "4165.T": {
+      "name": "PLAID INC",
+      "volume": 228400,
+      "avg_volume": 1188457,
+      "ratio": 0.19,
+      "price": 797.0,
+      "market_cap_oku": 327,
+      "in_cap_range": true
+    },
+    "4169.T": {
+      "name": "ENECHANGE LTD",
+      "volume": 59800,
+      "avg_volume": 372187,
+      "ratio": 0.16,
+      "price": 284.0,
+      "market_cap_oku": 121,
+      "in_cap_range": false
+    },
+    "3655.T": {
+      "name": "BRAINPAD INC.",
+      "volume": 57900,
+      "avg_volume": 461010,
+      "ratio": 0.13,
+      "price": 2690.0,
+      "market_cap_oku": 562,
+      "in_cap_range": true
+    },
+    "4563.T": {
+      "name": "ANGES INC",
+      "volume": 647300,
+      "avg_volume": 7410931,
+      "ratio": 0.09,
+      "price": 60.0,
+      "market_cap_oku": 232,
+      "in_cap_range": false
+    },
+    "4477.T": {
+      "name": "BASE INC",
+      "volume": 207100,
+      "avg_volume": 2711930,
+      "ratio": 0.08,
+      "price": 329.0,
+      "market_cap_oku": 379,
+      "in_cap_range": true
+    },
+    "4057.T": {
+      "name": "INTERFACTORY INC",
+      "volume": 300,
+      "avg_volume": 7991,
+      "ratio": 0.04,
+      "price": 410.0,
+      "market_cap_oku": 17,
+      "in_cap_range": false
+    }
+  }
 }
