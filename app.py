@@ -1,5 +1,6 @@
 """
 源太AI🤖ハゲタカSCOPE - 統合版
+- ログイン機能
 - 出来高急動モニター（GitHub Actionsで自動更新）
 - 利用者ごとのメール通知機能
 """
@@ -13,6 +14,7 @@ from pathlib import Path
 import streamlit as st
 from datetime import datetime
 import pytz
+import base64
 
 # ==========================================
 # 定数
@@ -22,6 +24,9 @@ RATIO_HIGH = 3.0
 RATIO_MEDIUM = 1.5
 MARKET_CAP_MIN = 300
 MARKET_CAP_MAX = 2000
+
+# ログインパスワード
+LOGIN_PASSWORD = "88888"
 
 # ==========================================
 # 日本語銘柄名辞書
@@ -143,9 +148,14 @@ h1 {
     color: #666 !important;
 }
 
+/* 選択中のタブ - 白文字に修正 */
 .stTabs [data-baseweb="tab"][aria-selected="true"] {
     background: linear-gradient(135deg, #C41E3A 0%, #E63946 100%) !important;
-    color: #FFF !important;
+    color: #FFFFFF !important;
+}
+
+.stTabs [data-baseweb="tab"][aria-selected="true"] p {
+    color: #FFFFFF !important;
 }
 
 /* カード：白背景・赤ボーダー */
@@ -277,16 +287,45 @@ p, span, label, div { color: #333; }
     color: #333 !important;
 }
 
-/* 設定セクション */
-.settings-section {
+/* ログイン画面 */
+.login-container {
+    max-width: 400px;
+    margin: 0 auto;
+    padding: 2rem;
     background: #FFFFFF;
-    border-radius: 10px;
-    padding: 1.5rem;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    border: 1px solid #F0F0F0;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(196, 30, 58, 0.15);
+    text-align: center;
+}
+
+.login-title {
+    color: #C41E3A;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+}
+
+.login-error {
+    color: #C41E3A;
+    background: #FFE0E0;
+    padding: 0.5rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.85rem;
 }
 </style>
 """, unsafe_allow_html=True)
+
+
+# ==========================================
+# ロゴ画像を読み込み
+# ==========================================
+def get_logo_base64():
+    try:
+        with open("logo.png", "rb") as f:
+            return base64.b64encode(f.read()).decode()
+    except:
+        return None
 
 
 # ==========================================
@@ -345,12 +384,15 @@ def send_spike_alert(email: str, app_password: str, stocks: List[Dict], updated_
         
         for s in stocks:
             marker = "🔴" if s["ratio"] >= RATIO_HIGH else "🟠"
+            name_jp = TICKER_NAMES_JP.get(s["ticker"], s.get("name", "")[:10])
             lines.extend([
-                f"{marker} {s['ticker']} ({s.get('name', '')[:10]})",
+                f"{marker} {s['ticker']} ({name_jp})",
                 f"   倍率: {s['ratio']}x | ¥{s.get('price', 0):,.0f} | {s.get('market_cap_oku', 0)}億円",
                 "",
             ])
         
+        lines.append("━" * 30)
+        lines.append("源太AI ハゲタカSCOPE")
         lines.append("━" * 30)
         msg.attach(MIMEText("\n".join(lines), "plain", "utf-8"))
         
@@ -404,159 +446,248 @@ def render_card(ticker: str, d: Dict, show_cap_badge: bool = False):
 
 
 # ==========================================
-# メイン
+# ログイン画面
 # ==========================================
-import base64
-
-# ロゴ画像を読み込んでBase64エンコード
-def get_logo_base64():
-    try:
-        with open("logo.png", "rb") as f:
-            return base64.b64encode(f.read()).decode()
-    except:
-        return None
-
-logo_base64 = get_logo_base64()
-
-# ヘッダー表示
-if logo_base64:
-    st.markdown(f"""
-    <div style="text-align: center; margin-bottom: 0.5rem;">
-        <img src="data:image/png;base64,{logo_base64}" style="max-width: 320px; width: 80%;">
-    </div>
-    """, unsafe_allow_html=True)
-else:
-    st.title("🦅 源太AI ハゲタカSCOPE")
-
-st.markdown(f'<p class="subtitle">中型株（{MARKET_CAP_MIN}億〜{MARKET_CAP_MAX}億円）の出来高急動を自動検知</p>', unsafe_allow_html=True)
-
-# データ読み込み
-data = load_data()
-
-# タブ
-tab1, tab2 = st.tabs(["📊 出来高急動", "🔔 通知設定"])
-
-# ==========================================
-# タブ1: 出来高急動
-# ==========================================
-with tab1:
-    if data:
-        updated_at = data.get("updated_at", "不明")
-        st.markdown(f"""
-        <div class="update-info">
-            📡 最終更新: <strong>{updated_at}</strong><br>
-            <span style="font-size:0.7rem;color:#666;">毎日 16:30 JST に自動更新されます</span>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # レジェンド
-        st.markdown("""
-        <div style="display:flex;justify-content:center;gap:1.2rem;margin-bottom:0.8rem;font-size:0.75rem;color:#666;">
-            <span>🔴 3倍以上</span>
-            <span>🟠 1.5倍以上</span>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # フィルター切替
-        show_all = st.checkbox("全銘柄を表示（時価総額フィルターOFF）", value=False)
-        
-        if show_all:
-            display_data = data.get("all_data", {})
-        else:
-            display_data = data.get("data", {})
-        
-        # 統計
-        spike_high = len([v for v in display_data.values() if v["ratio"] >= RATIO_HIGH])
-        spike_medium = len([v for v in display_data.values() if v["ratio"] >= RATIO_MEDIUM])
-        
-        col1, col2, col3 = st.columns(3)
-        with col1:
-            st.markdown(f'<div class="stat-box"><div class="stat-value high">{spike_high}</div><div class="stat-label">🔴 3倍以上</div></div>', unsafe_allow_html=True)
-        with col2:
-            st.markdown(f'<div class="stat-box"><div class="stat-value medium">{spike_medium}</div><div class="stat-label">🟠 1.5倍以上</div></div>', unsafe_allow_html=True)
-        with col3:
-            st.markdown(f'<div class="stat-box"><div class="stat-value total">{len(display_data)}</div><div class="stat-label">銘柄数</div></div>', unsafe_allow_html=True)
-        
-        st.markdown("")
-        
-        # 表示フィルター
-        filter_opt = st.radio("", ["すべて", "🔴 3倍以上", "🟠 1.5倍以上"], horizontal=True, label_visibility="collapsed")
-        
-        if filter_opt == "🔴 3倍以上":
-            display_data = {k: v for k, v in display_data.items() if v["ratio"] >= RATIO_HIGH}
-        elif filter_opt == "🟠 1.5倍以上":
-            display_data = {k: v for k, v in display_data.items() if v["ratio"] >= RATIO_MEDIUM}
-        
-        # カード表示
-        if display_data:
-            for ticker, d in display_data.items():
-                render_card(ticker, d, show_cap_badge=show_all)
-        else:
-            st.info("該当する銘柄がありません")
-        
-        # メール送信
-        email = st.session_state.get("email_address", "")
-        app_password = st.session_state.get("app_password", "")
-        
-        notify_stocks = [{"ticker": k, **v} for k, v in display_data.items() if v["ratio"] >= RATIO_MEDIUM]
-        
-        if notify_stocks and email and app_password:
-            st.markdown("---")
-            if st.button(f"📧 検知銘柄（{len(notify_stocks)}件）をメール送信"):
-                with st.spinner("送信中..."):
-                    if send_spike_alert(email, app_password, notify_stocks, updated_at):
-                        st.success(f"✅ 送信しました！")
-                    else:
-                        st.error("❌ 送信失敗。通知設定を確認してください。")
-    else:
-        st.markdown("""
-        <div style="text-align:center;padding:2rem;color:#666;">
-            <p style="font-size:2.5rem;">📊</p>
-            <p>データがありません</p>
-            <p style="font-size:0.8rem;color:#888;">GitHub Actionsで初回実行してください</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-
-# ==========================================
-# タブ2: 通知設定
-# ==========================================
-with tab2:
-    st.markdown("### 🔔 メール通知設定")
-    st.markdown('<p style="color:#666;font-size:0.8rem;">出来高急動（1.5倍以上）を検知した際に通知を受け取れます</p>', unsafe_allow_html=True)
+def show_login_page():
+    """ログイン画面を表示"""
+    logo_base64 = get_logo_base64()
     
-    email = st.text_input("Gmailアドレス", value=st.session_state.get("email_address", ""), placeholder="example@gmail.com")
-    app_password = st.text_input("アプリパスワード（16桁）", value=st.session_state.get("app_password", ""), type="password", placeholder="xxxx xxxx xxxx xxxx")
+    st.markdown("<div style='height: 60px;'></div>", unsafe_allow_html=True)
     
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("💾 保存", use_container_width=True):
-            st.session_state["email_address"] = email
-            st.session_state["app_password"] = app_password
-            st.success("✅ 保存しました")
+    # ログインコンテナ
+    col1, col2, col3 = st.columns([1, 2, 1])
     with col2:
-        if st.button("🧪 テスト送信", use_container_width=True):
-            if email and app_password:
-                ok, msg = send_test_email(email, app_password)
-                if ok:
-                    st.success(f"✅ {msg}")
-                else:
-                    st.error(f"❌ {msg}")
-            else:
-                st.warning("入力してください")
-    
-    with st.expander("📖 アプリパスワードの取得方法"):
-        st.markdown("""
-        1. [myaccount.google.com](https://myaccount.google.com/) にアクセス
-        2. **セキュリティ** → **2段階認証** を有効化
-        3. [アプリパスワード](https://myaccount.google.com/apppasswords) で生成
-        4. 16桁のパスワードを上のフォームに入力
+        # ロゴ表示
+        if logo_base64:
+            st.markdown(f"""
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+                <img src="data:image/png;base64,{logo_base64}" style="max-width: 280px; width: 90%;">
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("<h1 style='text-align:center;'>🦅 源太AI ハゲタカSCOPE</h1>", unsafe_allow_html=True)
         
-        ⚠️ 通常のGmailパスワードでは動作しません
-        """)
+        # ログインフォーム
+        st.markdown("""
+        <div style="text-align: center; margin-bottom: 1rem;">
+            <p style="color: #666; font-size: 0.9rem;">ログインしてください</p>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # エラーメッセージ表示
+        if st.session_state.get("login_error"):
+            st.markdown(f"""
+            <div class="login-error">
+                ❌ パスワードが正しくありません
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # パスワード入力
+        password = st.text_input(
+            "パスワード",
+            type="password",
+            placeholder="パスワードを入力",
+            key="login_password_input"
+        )
+        
+        # 次回から保存チェックボックス
+        remember = st.checkbox("次回からパスワードを保存", value=st.session_state.get("remember_password", False))
+        
+        # ログインボタン
+        if st.button("ログイン", use_container_width=True):
+            if password == LOGIN_PASSWORD:
+                st.session_state["logged_in"] = True
+                st.session_state["login_error"] = False
+                if remember:
+                    st.session_state["remember_password"] = True
+                    st.session_state["saved_password"] = password
+                st.rerun()
+            else:
+                st.session_state["login_error"] = True
+                st.rerun()
+        
+        # フッター
+        st.markdown("""
+        <div style="text-align: center; margin-top: 2rem; color: #aaa; font-size: 0.75rem;">
+            先乗り株カレッジ会員専用ツール
+        </div>
+        """, unsafe_allow_html=True)
+
+
+# ==========================================
+# メイン画面
+# ==========================================
+def show_main_page():
+    """メインアプリ画面を表示"""
+    logo_base64 = get_logo_base64()
     
-    st.markdown("""
-    <div style="background:#FFF5F5;border-radius:8px;padding:0.8rem;margin-top:1rem;font-size:0.75rem;color:#666;border:1px solid #FFE0E0;">
-        🔒 設定はあなたのブラウザにのみ保存されます
-    </div>
-    """, unsafe_allow_html=True)
+    # ヘッダー表示
+    if logo_base64:
+        st.markdown(f"""
+        <div style="text-align: center; margin-bottom: 0.5rem;">
+            <img src="data:image/png;base64,{logo_base64}" style="max-width: 320px; width: 80%;">
+        </div>
+        """, unsafe_allow_html=True)
+    else:
+        st.title("🦅 源太AI ハゲタカSCOPE")
+    
+    st.markdown(f'<p class="subtitle">中型株（{MARKET_CAP_MIN}億〜{MARKET_CAP_MAX}億円）の出来高急動を自動検知</p>', unsafe_allow_html=True)
+    
+    # データ読み込み
+    data = load_data()
+    
+    # タブ
+    tab1, tab2 = st.tabs(["📊 出来高急動", "🔔 通知設定"])
+    
+    # ==========================================
+    # タブ1: 出来高急動
+    # ==========================================
+    with tab1:
+        if data:
+            updated_at = data.get("updated_at", "不明")
+            st.markdown(f"""
+            <div class="update-info">
+                📡 最終更新: <strong>{updated_at}</strong><br>
+                <span style="font-size:0.7rem;color:#666;">毎日 16:30 JST に自動更新されます</span>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # レジェンド
+            st.markdown("""
+            <div style="display:flex;justify-content:center;gap:1.2rem;margin-bottom:0.8rem;font-size:0.75rem;color:#666;">
+                <span>🔴 3倍以上</span>
+                <span>🟠 1.5倍以上</span>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            # フィルター切替
+            show_all = st.checkbox("全銘柄を表示（時価総額フィルターOFF）", value=False)
+            
+            if show_all:
+                display_data = data.get("all_data", {})
+            else:
+                display_data = data.get("data", {})
+            
+            # 統計
+            spike_high = len([v for v in display_data.values() if v["ratio"] >= RATIO_HIGH])
+            spike_medium = len([v for v in display_data.values() if v["ratio"] >= RATIO_MEDIUM])
+            
+            col1, col2, col3 = st.columns(3)
+            with col1:
+                st.markdown(f'<div class="stat-box"><div class="stat-value high">{spike_high}</div><div class="stat-label">🔴 3倍以上</div></div>', unsafe_allow_html=True)
+            with col2:
+                st.markdown(f'<div class="stat-box"><div class="stat-value medium">{spike_medium}</div><div class="stat-label">🟠 1.5倍以上</div></div>', unsafe_allow_html=True)
+            with col3:
+                st.markdown(f'<div class="stat-box"><div class="stat-value total">{len(display_data)}</div><div class="stat-label">銘柄数</div></div>', unsafe_allow_html=True)
+            
+            st.markdown("")
+            
+            # 表示フィルター
+            filter_opt = st.radio("", ["すべて", "🔴 3倍以上", "🟠 1.5倍以上"], horizontal=True, label_visibility="collapsed")
+            
+            if filter_opt == "🔴 3倍以上":
+                display_data = {k: v for k, v in display_data.items() if v["ratio"] >= RATIO_HIGH}
+            elif filter_opt == "🟠 1.5倍以上":
+                display_data = {k: v for k, v in display_data.items() if v["ratio"] >= RATIO_MEDIUM}
+            
+            # カード表示
+            if display_data:
+                for ticker, d in display_data.items():
+                    render_card(ticker, d, show_cap_badge=show_all)
+            else:
+                st.info("該当する銘柄がありません")
+            
+            # メール送信
+            email = st.session_state.get("email_address", "")
+            app_password = st.session_state.get("app_password", "")
+            
+            notify_stocks = [{"ticker": k, **v} for k, v in display_data.items() if v["ratio"] >= RATIO_MEDIUM]
+            
+            if notify_stocks and email and app_password:
+                st.markdown("---")
+                if st.button(f"📧 検知銘柄（{len(notify_stocks)}件）をメール送信"):
+                    with st.spinner("送信中..."):
+                        if send_spike_alert(email, app_password, notify_stocks, updated_at):
+                            st.success(f"✅ 送信しました！")
+                        else:
+                            st.error("❌ 送信失敗。通知設定を確認してください。")
+        else:
+            st.markdown("""
+            <div style="text-align:center;padding:2rem;color:#666;">
+                <p style="font-size:2.5rem;">📊</p>
+                <p>データがありません</p>
+                <p style="font-size:0.8rem;color:#888;">GitHub Actionsで初回実行してください</p>
+            </div>
+            """, unsafe_allow_html=True)
+    
+    # ==========================================
+    # タブ2: 通知設定
+    # ==========================================
+    with tab2:
+        st.markdown("### 🔔 メール通知設定")
+        st.markdown('<p style="color:#666;font-size:0.8rem;">出来高急動（1.5倍以上）を検知した際に通知を受け取れます</p>', unsafe_allow_html=True)
+        
+        email = st.text_input("Gmailアドレス", value=st.session_state.get("email_address", ""), placeholder="example@gmail.com")
+        app_password = st.text_input("アプリパスワード（16桁）", value=st.session_state.get("app_password", ""), type="password", placeholder="xxxx xxxx xxxx xxxx")
+        
+        col1, col2 = st.columns(2)
+        with col1:
+            if st.button("💾 保存", use_container_width=True):
+                st.session_state["email_address"] = email
+                st.session_state["app_password"] = app_password
+                st.success("✅ 保存しました")
+        with col2:
+            if st.button("🧪 テスト送信", use_container_width=True):
+                if email and app_password:
+                    ok, msg = send_test_email(email, app_password)
+                    if ok:
+                        st.success(f"✅ {msg}")
+                    else:
+                        st.error(f"❌ {msg}")
+                else:
+                    st.warning("入力してください")
+        
+        with st.expander("📖 アプリパスワードの取得方法"):
+            st.markdown("""
+            1. [myaccount.google.com](https://myaccount.google.com/) にアクセス
+            2. **セキュリティ** → **2段階認証** を有効化
+            3. [アプリパスワード](https://myaccount.google.com/apppasswords) で生成
+            4. 16桁のパスワードを上のフォームに入力
+            
+            ⚠️ 通常のGmailパスワードでは動作しません
+            """)
+        
+        st.markdown("""
+        <div style="background:#FFF5F5;border-radius:8px;padding:0.8rem;margin-top:1rem;font-size:0.75rem;color:#666;border:1px solid #FFE0E0;">
+            🔒 設定はあなたのブラウザにのみ保存されます
+        </div>
+        """, unsafe_allow_html=True)
+        
+        # ログアウトボタン
+        st.markdown("---")
+        if st.button("🚪 ログアウト", use_container_width=True):
+            st.session_state["logged_in"] = False
+            # パスワード保存していない場合はクリア
+            if not st.session_state.get("remember_password"):
+                st.session_state["saved_password"] = None
+            st.rerun()
+
+
+# ==========================================
+# メイン処理
+# ==========================================
+# セッション初期化
+if "logged_in" not in st.session_state:
+    st.session_state["logged_in"] = False
+if "login_error" not in st.session_state:
+    st.session_state["login_error"] = False
+
+# 保存されたパスワードがあれば自動ログイン
+if st.session_state.get("remember_password") and st.session_state.get("saved_password") == LOGIN_PASSWORD:
+    st.session_state["logged_in"] = True
+
+# ページ表示
+if st.session_state.get("logged_in"):
+    show_main_page()
+else:
+    show_login_page()
