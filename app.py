@@ -24,6 +24,67 @@ MARKET_CAP_MIN = 300
 MARKET_CAP_MAX = 2000
 
 # ==========================================
+# 日本語銘柄名辞書
+# ==========================================
+TICKER_NAMES_JP = {
+    "3923.T": "ラクス",
+    "4443.T": "Sansan",
+    "4478.T": "フリー",
+    "3994.T": "マネーフォワード",
+    "4165.T": "プレイド",
+    "4169.T": "ENECHANGE",
+    "4449.T": "ギフティ",
+    "4475.T": "HENNGE",
+    "4431.T": "スマレジ",
+    "4057.T": "インターファクトリー",
+    "3697.T": "SHIFT",
+    "4194.T": "ビジョナル",
+    "4180.T": "Appier",
+    "3655.T": "ブレインパッド",
+    "4751.T": "サイバーエージェント",
+    "3681.T": "ブイキューブ",
+    "6035.T": "IRジャパン",
+    "4384.T": "ラクスル",
+    "9558.T": "ジャパニアス",
+    "4441.T": "トビラシステムズ",
+    "6315.T": "TOWA",
+    "6323.T": "ローツェ",
+    "6890.T": "フェローテック",
+    "7735.T": "SCREENホールディングス",
+    "6146.T": "ディスコ",
+    "6266.T": "タツモ",
+    "3132.T": "マクニカホールディングス",
+    "6920.T": "レーザーテック",
+    "4565.T": "そーせいグループ",
+    "4587.T": "ペプチドリーム",
+    "4582.T": "シンバイオ製薬",
+    "4583.T": "カイオム・バイオ",
+    "4563.T": "アンジェス",
+    "2370.T": "メディネット",
+    "4593.T": "ヘリオス",
+    "3064.T": "MonotaRO",
+    "3092.T": "ZOZO",
+    "3769.T": "GMOペイメント",
+    "4385.T": "メルカリ",
+    "7342.T": "ウェルスナビ",
+    "4480.T": "メドレー",
+    "6560.T": "LTS",
+    "3182.T": "オイシックス",
+    "9166.T": "GENDA",
+    "3765.T": "ガンホー",
+    "3659.T": "ネクソン",
+    "3656.T": "KLab",
+    "3932.T": "アカツキ",
+    "4071.T": "プラスアルファ",
+    "4485.T": "JTOWER",
+    "7095.T": "Macbee Planet",
+    "4054.T": "日本情報クリエイト",
+    "6095.T": "メドピア",
+    "4436.T": "ミンカブ",
+    "4477.T": "BASE",
+}
+
+# ==========================================
 # UI設定
 # ==========================================
 st.set_page_config(
@@ -38,36 +99,18 @@ st.set_page_config(
 # ==========================================
 st.markdown("""
 <style>
-/* =================================
-   1. 基本レイアウト復旧（最優先）
-   ================================= */
+#MainMenu, footer, header, .stDeployButton {display: none !important;}
+
 /* 背景：白ベース */
 div[data-testid="stAppViewContainer"] {
     background: linear-gradient(180deg, #FFFFFF 0%, #FFF5F5 100%) !important;
 }
 
-/* メインコンテンツの幅と余白 */
 .main .block-container {
     max-width: 800px !important;
     padding: 1rem 1rem 3rem 1rem !important;
 }
 
-/* =================================
-   2. 不要な要素の非表示（安全な方法）
-   ================================= */
-/* 右上のハンバーガーメニュー、ヘッダー、フッターを非表示 */
-#MainMenu, header, footer {
-    visibility: hidden !important;
-}
-
-/* 右上のデプロイボタンなどを非表示 */
-.stDeployButton {
-    display: none !important;
-}
-
-/* =================================
-   3. デザイン装飾（元の設定）
-   ================================= */
 /* タイトル：赤 */
 h1 {
     text-align: center !important;
@@ -105,7 +148,7 @@ h1 {
     color: #FFF !important;
 }
 
-/* カードデザイン */
+/* カード：白背景・赤ボーダー */
 .spike-card {
     background: #FFFFFF;
     border-radius: 10px;
@@ -176,7 +219,7 @@ h1 {
 .stat-value.total { color: #C41E3A; }
 .stat-label { font-size: 0.7rem; color: #666; }
 
-/* ボタン */
+/* ボタン：赤グラデーション */
 .stButton > button {
     background: linear-gradient(135deg, #C41E3A 0%, #E63946 100%) !important;
     color: #FFF !important;
@@ -215,18 +258,26 @@ p, span, label, div { color: #333; }
 .cap-badge.in { background: rgba(196,30,58,0.1); color: #C41E3A; }
 .cap-badge.out { background: rgba(128,128,128,0.1); color: #888; }
 
-/* その他UI要素 */
+/* チェックボックス */
 .stCheckbox label span { color: #333 !important; }
+
+/* ラジオボタン */
 .stRadio label span { color: #333 !important; }
+
+/* 入力フィールド */
 .stTextInput input {
     background: #FFFFFF !important;
     color: #333 !important;
     border: 1px solid #DDD !important;
 }
+
+/* expander */
 .streamlit-expanderHeader {
     background: #FFF5F5 !important;
     color: #333 !important;
 }
+
+/* 設定セクション */
 .settings-section {
     background: #FFFFFF;
     border-radius: 10px;
@@ -323,6 +374,9 @@ def render_card(ticker: str, d: Dict, show_cap_badge: bool = False):
     code = ticker.replace(".T", "")
     url = f"https://finance.yahoo.co.jp/quote/{code}.T"
     
+    # 日本語名を優先、なければ英語名、なければ銘柄コード
+    name_jp = TICKER_NAMES_JP.get(ticker, d.get('name', code))
+    
     cap_badge = ""
     if show_cap_badge:
         if d.get("in_cap_range"):
@@ -335,7 +389,7 @@ def render_card(ticker: str, d: Dict, show_cap_badge: bool = False):
         <div class="card-header">
             <div class="ticker-name">
                 <a href="{url}" target="_blank">{ticker}</a>
-                <span style="font-size:0.75rem;color:#888;margin-left:6px;">{str(d.get('name',''))[:12]}</span>
+                <span style="font-size:0.75rem;color:#888;margin-left:6px;">{str(name_jp)[:12]}</span>
             </div>
             <div class="ratio-badge {ratio_class}">{ratio}x</div>
         </div>
