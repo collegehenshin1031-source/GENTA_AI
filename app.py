@@ -38,46 +38,202 @@ st.set_page_config(
 # ==========================================
 st.markdown("""
 <style>
-    /* 既存の設定 */
-    #MainMenu, footer, header, .stDeployButton {display: none !important;}
+/* =================================
+   1. 基本レイアウト復旧（最優先）
+   ================================= */
+/* 背景：白ベース */
+div[data-testid="stAppViewContainer"] {
+    background: linear-gradient(180deg, #FFFFFF 0%, #FFF5F5 100%) !important;
+}
 
-    /* 追加：ツールバーとヘッダーの装飾を消す */
-    div[data-testid="stToolbar"] {
-        visibility: hidden;
-        height: 0%;
-        position: fixed;
-    }
-    div[data-testid="stDecoration"] {
-        visibility: hidden;
-        height: 0%;
-        position: fixed;
-    }
-    div[data-testid="stStatusWidget"] {
-        visibility: hidden;
-        height: 0%;
-        position: fixed;
-    }
+/* メインコンテンツの幅と余白 */
+.main .block-container {
+    max-width: 800px !important;
+    padding: 1rem 1rem 3rem 1rem !important;
+}
 
-    /* 追加：右下の「Hosted with Streamlit」等のビューワーバッジを消す */
-    .viewerBadge_container__1QSob {
-        display: none !important;
-    }
-    /* クラス名が変わっても対応できるように汎用的な指定も追加 */
-    div[class^="viewerBadge"] {
-        display: none !important;
-    }
+/* =================================
+   2. 不要な要素の非表示（安全な方法）
+   ================================= */
+/* 右上のハンバーガーメニュー、ヘッダー、フッターを非表示 */
+#MainMenu, header, footer {
+    visibility: hidden !important;
+}
 
-    /* 背景：白ベース（既存のまま） */
-    div[data-testid="stAppViewContainer"] {
-        background: linear-gradient(180deg, #FFFFFF 0%, #FFF5F5 100%) !important;
-    }
-    
-    /* 以下、既存のデザインCSS（変更なし）... */
-    .main .block-container {
-        max-width: 800px !important;
-        padding: 1rem 1rem 3rem 1rem !important;
-    }
-    /* ...（中略：残りのCSSはそのまま維持してください）... */
+/* 右上のデプロイボタンなどを非表示 */
+.stDeployButton {
+    display: none !important;
+}
+
+/* =================================
+   3. デザイン装飾（元の設定）
+   ================================= */
+/* タイトル：赤 */
+h1 {
+    text-align: center !important;
+    font-size: 1.6rem !important;
+    color: #C41E3A !important;
+    font-weight: 800 !important;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    font-size: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+/* タブ */
+.stTabs [data-baseweb="tab-list"] {
+    justify-content: center !important;
+    background-color: #FFF !important;
+    padding: 0.3rem !important;
+    border-radius: 10px !important;
+    margin-bottom: 1rem !important;
+    box-shadow: 0 2px 8px rgba(196, 30, 58, 0.1) !important;
+}
+
+.stTabs [data-baseweb="tab"] {
+    padding: 0.5rem 1rem !important;
+    border-radius: 6px !important;
+    font-weight: 600 !important;
+    color: #666 !important;
+}
+
+.stTabs [data-baseweb="tab"][aria-selected="true"] {
+    background: linear-gradient(135deg, #C41E3A 0%, #E63946 100%) !important;
+    color: #FFF !important;
+}
+
+/* カードデザイン */
+.spike-card {
+    background: #FFFFFF;
+    border-radius: 10px;
+    padding: 0.9rem;
+    margin-bottom: 0.6rem;
+    border-left: 4px solid #C41E3A;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.spike-card.high {
+    border-left-color: #C41E3A;
+    background: linear-gradient(90deg, rgba(196,30,58,0.08) 0%, #FFFFFF 100%);
+}
+
+.spike-card.medium {
+    border-left-color: #FFB347;
+    background: linear-gradient(90deg, rgba(255,179,71,0.08) 0%, #FFFFFF 100%);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.4rem;
+}
+
+.ticker-name {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.ticker-name a { color: inherit; text-decoration: none; }
+.ticker-name a:hover { color: #C41E3A; }
+
+.ratio-badge {
+    font-size: 1.3rem;
+    font-weight: bold;
+}
+
+.ratio-badge.high { color: #C41E3A; }
+.ratio-badge.medium { color: #FF8C00; }
+.ratio-badge.normal { color: #28a745; }
+
+.card-body {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.4rem;
+    font-size: 0.8rem;
+}
+
+.info-label { color: #888; font-size: 0.7rem; }
+.info-value { color: #333; }
+
+/* 統計ボックス */
+.stat-box {
+    background: #FFFFFF;
+    border-radius: 10px;
+    padding: 0.8rem;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #F0F0F0;
+}
+
+.stat-value { font-size: 1.6rem; font-weight: bold; }
+.stat-value.high { color: #C41E3A; }
+.stat-value.medium { color: #FF8C00; }
+.stat-value.total { color: #C41E3A; }
+.stat-label { font-size: 0.7rem; color: #666; }
+
+/* ボタン */
+.stButton > button {
+    background: linear-gradient(135deg, #C41E3A 0%, #E63946 100%) !important;
+    color: #FFF !important;
+    font-weight: 600 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    box-shadow: 0 2px 8px rgba(196, 30, 58, 0.3) !important;
+}
+
+.stButton > button:hover {
+    background: linear-gradient(135deg, #A01830 0%, #C41E3A 100%) !important;
+}
+
+/* テキスト色 */
+p, span, label, div { color: #333; }
+
+/* 更新情報ボックス */
+.update-info {
+    text-align: center;
+    padding: 0.8rem;
+    background: linear-gradient(135deg, #FFF5F5 0%, #FFFFFF 100%);
+    border-radius: 8px;
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+    border: 1px solid #FFE0E0;
+    color: #333;
+}
+
+.cap-badge {
+    display: inline-block;
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-size: 0.65rem;
+    margin-left: 4px;
+}
+.cap-badge.in { background: rgba(196,30,58,0.1); color: #C41E3A; }
+.cap-badge.out { background: rgba(128,128,128,0.1); color: #888; }
+
+/* その他UI要素 */
+.stCheckbox label span { color: #333 !important; }
+.stRadio label span { color: #333 !important; }
+.stTextInput input {
+    background: #FFFFFF !important;
+    color: #333 !important;
+    border: 1px solid #DDD !important;
+}
+.streamlit-expanderHeader {
+    background: #FFF5F5 !important;
+    color: #333 !important;
+}
+.settings-section {
+    background: #FFFFFF;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    border: 1px solid #F0F0F0;
+}
 </style>
 """, unsafe_allow_html=True)
 
