@@ -2,7 +2,7 @@
 源太AI🤖ハゲタカSCOPE - 統合版
 - ログイン機能
 - 出来高急動モニター（GitHub Actionsで自動更新）
-- 利用者ごとのメール通知機能
+- 利用者ごとのメール通知機能（LocalStorage永続化）
 """
 
 import json
@@ -15,6 +15,7 @@ import streamlit as st
 from datetime import datetime
 import pytz
 import base64
+from streamlit.components.v1 import html
 
 # ==========================================
 # 定数
@@ -148,7 +149,7 @@ h1 {
     color: #666 !important;
 }
 
-/* 選択中のタブ - 白文字に修正 */
+/* 選択中のタブ - 白文字 */
 .stTabs [data-baseweb="tab"][aria-selected="true"] {
     background: linear-gradient(135deg, #C41E3A 0%, #E63946 100%) !important;
     color: #FFFFFF !important;
@@ -229,10 +230,10 @@ h1 {
 .stat-value.total { color: #C41E3A; }
 .stat-label { font-size: 0.7rem; color: #666; }
 
-/* ボタン：赤グラデーション */
+/* ボタン：赤グラデーション・白文字 */
 .stButton > button {
     background: linear-gradient(135deg, #C41E3A 0%, #E63946 100%) !important;
-    color: #FFF !important;
+    color: #FFFFFF !important;
     font-weight: 600 !important;
     border: none !important;
     border-radius: 8px !important;
@@ -241,6 +242,15 @@ h1 {
 
 .stButton > button:hover {
     background: linear-gradient(135deg, #A01830 0%, #C41E3A 100%) !important;
+    color: #FFFFFF !important;
+}
+
+.stButton > button:active {
+    color: #FFFFFF !important;
+}
+
+.stButton > button p {
+    color: #FFFFFF !important;
 }
 
 /* テキスト色 */
@@ -339,6 +349,60 @@ def load_data() -> Dict:
         with open(data_path, "r", encoding="utf-8") as f:
             return json.load(f)
     return {}
+
+
+# ==========================================
+# LocalStorage連携（JavaScript）
+# ==========================================
+def load_from_localstorage():
+    """LocalStorageから設定を読み込むJavaScriptを実行"""
+    html("""
+    <script>
+    // LocalStorageから読み込み
+    const email = localStorage.getItem('hagetaka_email') || '';
+    const appPassword = localStorage.getItem('hagetaka_app_password') || '';
+    
+    // Streamlitに送信（URLパラメータ経由）
+    if (email || appPassword) {
+        const currentUrl = new URL(window.parent.location.href);
+        let needReload = false;
+        
+        if (email && !currentUrl.searchParams.has('email')) {
+            currentUrl.searchParams.set('email', email);
+            needReload = true;
+        }
+        if (appPassword && !currentUrl.searchParams.has('app_pw')) {
+            currentUrl.searchParams.set('app_pw', appPassword);
+            needReload = true;
+        }
+        
+        if (needReload) {
+            window.parent.history.replaceState({}, '', currentUrl.toString());
+            window.parent.location.reload();
+        }
+    }
+    </script>
+    """, height=0)
+
+
+def save_to_localstorage(email: str, app_password: str):
+    """LocalStorageに設定を保存するJavaScriptを実行"""
+    html(f"""
+    <script>
+    localStorage.setItem('hagetaka_email', '{email}');
+    localStorage.setItem('hagetaka_app_password', '{app_password}');
+    </script>
+    """, height=0)
+
+
+def clear_localstorage():
+    """LocalStorageをクリアするJavaScriptを実行"""
+    html("""
+    <script>
+    localStorage.removeItem('hagetaka_email');
+    localStorage.removeItem('hagetaka_app_password');
+    </script>
+    """, height=0)
 
 
 # ==========================================
@@ -490,17 +554,11 @@ def show_login_page():
             key="login_password_input"
         )
         
-        # 次回から保存チェックボックス
-        remember = st.checkbox("次回からパスワードを保存", value=st.session_state.get("remember_password", False))
-        
         # ログインボタン
         if st.button("ログイン", use_container_width=True):
             if password == LOGIN_PASSWORD:
                 st.session_state["logged_in"] = True
                 st.session_state["login_error"] = False
-                if remember:
-                    st.session_state["remember_password"] = True
-                    st.session_state["saved_password"] = password
                 st.rerun()
             else:
                 st.session_state["login_error"] = True
@@ -521,6 +579,15 @@ def show_main_page():
     """メインアプリ画面を表示"""
     logo_base64 = get_logo_base64()
     
+    # URLパラメータからメール設定を取得
+    query_params = st.query_params
+    if "email" in query_params and not st.session_state.get("email_loaded"):
+        st.session_state["email_address"] = query_params["email"]
+        st.session_state["email_loaded"] = True
+    if "app_pw" in query_params and not st.session_state.get("pw_loaded"):
+        st.session_state["app_password"] = query_params["app_pw"]
+        st.session_state["pw_loaded"] = True
+    
     # ヘッダー表示
     if logo_base64:
         st.markdown(f"""
@@ -532,6 +599,11 @@ def show_main_page():
         st.title("🦅 源太AI ハゲタカSCOPE")
     
     st.markdown(f'<p class="subtitle">中型株（{MARKET_CAP_MIN}億〜{MARKET_CAP_MAX}億円）の出来高急動を自動検知</p>', unsafe_allow_html=True)
+    
+    # LocalStorageから読み込み試行（初回のみ）
+    if not st.session_state.get("localstorage_loaded"):
+        load_from_localstorage()
+        st.session_state["localstorage_loaded"] = True
     
     # データ読み込み
     data = load_data()
@@ -635,7 +707,9 @@ def show_main_page():
             if st.button("💾 保存", use_container_width=True):
                 st.session_state["email_address"] = email
                 st.session_state["app_password"] = app_password
-                st.success("✅ 保存しました")
+                # LocalStorageに保存
+                save_to_localstorage(email, app_password)
+                st.success("✅ 保存しました（この端末に記憶されます）")
         with col2:
             if st.button("🧪 テスト送信", use_container_width=True):
                 if email and app_password:
@@ -646,6 +720,14 @@ def show_main_page():
                         st.error(f"❌ {msg}")
                 else:
                     st.warning("入力してください")
+        
+        # 設定クリアボタン
+        if st.button("🗑️ 保存した設定をクリア", use_container_width=True):
+            st.session_state["email_address"] = ""
+            st.session_state["app_password"] = ""
+            clear_localstorage()
+            st.success("✅ 設定をクリアしました")
+            st.rerun()
         
         with st.expander("📖 アプリパスワードの取得方法"):
             st.markdown("""
@@ -659,7 +741,7 @@ def show_main_page():
         
         st.markdown("""
         <div style="background:#FFF5F5;border-radius:8px;padding:0.8rem;margin-top:1rem;font-size:0.75rem;color:#666;border:1px solid #FFE0E0;">
-            🔒 設定はあなたのブラウザにのみ保存されます
+            🔒 設定はこの端末のブラウザに保存されます（他の人からは見えません）
         </div>
         """, unsafe_allow_html=True)
         
@@ -667,9 +749,6 @@ def show_main_page():
         st.markdown("---")
         if st.button("🚪 ログアウト", use_container_width=True):
             st.session_state["logged_in"] = False
-            # パスワード保存していない場合はクリア
-            if not st.session_state.get("remember_password"):
-                st.session_state["saved_password"] = None
             st.rerun()
 
 
@@ -681,10 +760,6 @@ if "logged_in" not in st.session_state:
     st.session_state["logged_in"] = False
 if "login_error" not in st.session_state:
     st.session_state["login_error"] = False
-
-# 保存されたパスワードがあれば自動ログイン
-if st.session_state.get("remember_password") and st.session_state.get("saved_password") == LOGIN_PASSWORD:
-    st.session_state["logged_in"] = True
 
 # ページ表示
 if st.session_state.get("logged_in"):
