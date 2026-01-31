@@ -1,21 +1,27 @@
 """
 源太AI🤖ハゲタカSCOPE - 統合版
-- ログイン機能
+- ログイン機能（共通パスワード or 個人キー）
 - 出来高急動モニター（GitHub Actionsで自動更新）
-- 利用者ごとのメール通知機能（LocalStorage永続化）
+- 利用者ごとのメール通知機能（Google Sheets永続化）
 """
 
 import json
 import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Dict, List
+from typing import Dict, List, Optional
 from pathlib import Path
 import streamlit as st
 from datetime import datetime
 import pytz
 import base64
-from streamlit.components.v1 import html
+import pandas as pd
+
+# Google Sheets連携
+from streamlit_gsheets import GSheetsConnection
+
+# 暗号化
+from cryptography.fernet import Fernet
 
 # ==========================================
 # 定数
@@ -26,8 +32,8 @@ RATIO_MEDIUM = 1.5
 MARKET_CAP_MIN = 300
 MARKET_CAP_MAX = 2000
 
-# ログインパスワード
-LOGIN_PASSWORD = "88888"
+# 共通ログインパスワード（初回用）
+MASTER_PASSWORD = "88888"
 
 # ==========================================
 # 日本語銘柄名辞書
@@ -323,6 +329,39 @@ p, span, label, div { color: #333; }
     margin-bottom: 1rem;
     font-size: 0.85rem;
 }
+
+/* ヒントボックス */
+.hint-box {
+    background: linear-gradient(135deg, #E8F4FD 0%, #F0F8FF 100%);
+    border: 1px solid #B0D4F1;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+    color: #333;
+}
+
+/* 成功ボックス */
+.success-box {
+    background: linear-gradient(135deg, #E8F5E9 0%, #F1F8E9 100%);
+    border: 1px solid #A5D6A7;
+    border-radius: 8px;
+    padding: 1rem;
+    margin: 1rem 0;
+    font-size: 0.85rem;
+    color: #333;
+}
+
+/* アクセスキー説明ボックス */
+.access-key-info {
+    background: #F0F8FF;
+    border: 1px solid #B0D4F1;
+    border-radius: 8px;
+    padding: 0.8rem;
+    margin-bottom: 1rem;
+    font-size: 0.8rem;
+    color: #333;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -352,57 +391,118 @@ def load_data() -> Dict:
 
 
 # ==========================================
-# LocalStorage連携（JavaScript）
+# 暗号化・復号化
 # ==========================================
-def load_from_localstorage():
-    """LocalStorageから設定を読み込むJavaScriptを実行"""
-    html("""
-    <script>
-    // LocalStorageから読み込み
-    const email = localStorage.getItem('hagetaka_email') || '';
-    const appPassword = localStorage.getItem('hagetaka_app_password') || '';
+def get_fernet() -> Fernet:
+    """暗号化キーを取得してFernetインスタンスを返す"""
+    encryption_key = st.secrets["encryption"]["key"]
+    return Fernet(encryption_key.encode())
+
+
+def encrypt_password(password: str) -> str:
+    """パスワードを暗号化"""
+    if not password:
+        return ""
+    fernet = get_fernet()
+    encrypted = fernet.encrypt(password.encode())
+    return encrypted.decode()
+
+
+def decrypt_password(encrypted_password: str) -> str:
+    """暗号化されたパスワードを復号化"""
+    if not encrypted_password:
+        return ""
+    try:
+        fernet = get_fernet()
+        decrypted = fernet.decrypt(encrypted_password.encode())
+        return decrypted.decode()
+    except Exception:
+        return ""
+
+
+# ==========================================
+# Google Sheets連携
+# ==========================================
+def get_gsheets_connection():
+    """Google Sheets接続を取得"""
+    return st.connection("gsheets", type=GSheetsConnection)
+
+
+def load_settings_from_sheet(access_key: str) -> Optional[Dict]:
+    """スプレッドシートから設定を読み込み"""
+    if not access_key:
+        return None
     
-    // Streamlitに送信（URLパラメータ経由）
-    if (email || appPassword) {
-        const currentUrl = new URL(window.parent.location.href);
-        let needReload = false;
+    try:
+        conn = get_gsheets_connection()
+        df = conn.read(worksheet="settings", usecols=[0, 1, 2], ttl=5)
         
-        if (email && !currentUrl.searchParams.has('email')) {
-            currentUrl.searchParams.set('email', email);
-            needReload = true;
-        }
-        if (appPassword && !currentUrl.searchParams.has('app_pw')) {
-            currentUrl.searchParams.set('app_pw', appPassword);
-            needReload = true;
-        }
+        if df is None or df.empty:
+            return None
         
-        if (needReload) {
-            window.parent.history.replaceState({}, '', currentUrl.toString());
-            window.parent.location.reload();
+        # カラム名を正規化
+        df.columns = ["access_key", "email", "encrypted_password"]
+        
+        # アクセスキーで検索
+        row = df[df["access_key"] == access_key]
+        
+        if row.empty:
+            return None
+        
+        return {
+            "email": row.iloc[0]["email"],
+            "encrypted_password": row.iloc[0]["encrypted_password"]
         }
-    }
-    </script>
-    """, height=0)
+    except Exception as e:
+        return None
 
 
-def save_to_localstorage(email: str, app_password: str):
-    """LocalStorageに設定を保存するJavaScriptを実行"""
-    html(f"""
-    <script>
-    localStorage.setItem('hagetaka_email', '{email}');
-    localStorage.setItem('hagetaka_app_password', '{app_password}');
-    </script>
-    """, height=0)
+def check_access_key_exists(access_key: str) -> bool:
+    """アクセスキーが存在するかチェック"""
+    settings = load_settings_from_sheet(access_key)
+    return settings is not None
 
 
-def clear_localstorage():
-    """LocalStorageをクリアするJavaScriptを実行"""
-    html("""
-    <script>
-    localStorage.removeItem('hagetaka_email');
-    localStorage.removeItem('hagetaka_app_password');
-    </script>
-    """, height=0)
+def save_settings_to_sheet(access_key: str, email: str, app_password: str) -> bool:
+    """スプレッドシートに設定を保存（既存キーなら更新）"""
+    if not access_key:
+        return False
+    
+    try:
+        conn = get_gsheets_connection()
+        
+        # 現在のデータを読み込み
+        try:
+            df = conn.read(worksheet="settings", usecols=[0, 1, 2], ttl=0)
+            if df is not None and not df.empty:
+                df.columns = ["access_key", "email", "encrypted_password"]
+            else:
+                df = pd.DataFrame(columns=["access_key", "email", "encrypted_password"])
+        except Exception:
+            df = pd.DataFrame(columns=["access_key", "email", "encrypted_password"])
+        
+        # パスワードを暗号化
+        encrypted_pw = encrypt_password(app_password)
+        
+        # 既存キーがあれば更新、なければ追加
+        if access_key in df["access_key"].values:
+            df.loc[df["access_key"] == access_key, "email"] = email
+            df.loc[df["access_key"] == access_key, "encrypted_password"] = encrypted_pw
+        else:
+            new_row = pd.DataFrame({
+                "access_key": [access_key],
+                "email": [email],
+                "encrypted_password": [encrypted_pw]
+            })
+            df = pd.concat([df, new_row], ignore_index=True)
+        
+        # スプレッドシートに書き込み
+        conn.update(worksheet="settings", data=df)
+        
+        return True
+    except Exception as e:
+        st.error(f"保存エラー: {str(e)}")
+        return False
 
 
 # ==========================================
@@ -540,7 +640,7 @@ def show_login_page():
         
         # エラーメッセージ表示
         if st.session_state.get("login_error"):
-            st.markdown(f"""
+            st.markdown("""
             <div class="login-error">
                 ❌ パスワードが正しくありません
             </div>
@@ -550,19 +650,42 @@ def show_login_page():
         password = st.text_input(
             "パスワード",
             type="password",
-            placeholder="パスワードを入力",
+            placeholder="共通パスワード or マイキー",
             key="login_password_input"
         )
         
         # ログインボタン
         if st.button("ログイン", use_container_width=True):
-            if password == LOGIN_PASSWORD:
+            # 共通パスワードでログイン
+            if password == MASTER_PASSWORD:
                 st.session_state["logged_in"] = True
                 st.session_state["login_error"] = False
+                st.session_state["login_type"] = "master"  # 共通パスワードでログイン
+                st.session_state["access_key"] = ""
                 st.rerun()
             else:
-                st.session_state["login_error"] = True
-                st.rerun()
+                # 個人キーとしてスプレッドシートを検索
+                settings = load_settings_from_sheet(password)
+                if settings:
+                    st.session_state["logged_in"] = True
+                    st.session_state["login_error"] = False
+                    st.session_state["login_type"] = "personal"  # 個人キーでログイン
+                    st.session_state["access_key"] = password
+                    st.session_state["email_address"] = settings["email"]
+                    st.session_state["app_password"] = decrypt_password(settings["encrypted_password"])
+                    st.rerun()
+                else:
+                    st.session_state["login_error"] = True
+                    st.rerun()
+        
+        # ヒント
+        st.markdown("""
+        <div style="background:#F5F5F5;border-radius:8px;padding:0.8rem;margin-top:1rem;font-size:0.75rem;color:#666;text-align:left;">
+            <p style="margin:0 0 0.3rem 0;font-weight:bold;">💡 ログイン方法</p>
+            <p style="margin:0 0 0.2rem 0;">• <strong>初回の方</strong>：共通パスワードを入力</p>
+            <p style="margin:0;">• <strong>2回目以降</strong>：ご自身のマイキーを入力すると設定が自動で読み込まれます</p>
+        </div>
+        """, unsafe_allow_html=True)
         
         # フッター
         st.markdown("""
@@ -579,15 +702,6 @@ def show_main_page():
     """メインアプリ画面を表示"""
     logo_base64 = get_logo_base64()
     
-    # URLパラメータからメール設定を取得
-    query_params = st.query_params
-    if "email" in query_params and not st.session_state.get("email_loaded"):
-        st.session_state["email_address"] = query_params["email"]
-        st.session_state["email_loaded"] = True
-    if "app_pw" in query_params and not st.session_state.get("pw_loaded"):
-        st.session_state["app_password"] = query_params["app_pw"]
-        st.session_state["pw_loaded"] = True
-    
     # ヘッダー表示
     if logo_base64:
         st.markdown(f"""
@@ -600,10 +714,24 @@ def show_main_page():
     
     st.markdown(f'<p class="subtitle">中型株（{MARKET_CAP_MIN}億〜{MARKET_CAP_MAX}億円）の出来高急動を自動検知</p>', unsafe_allow_html=True)
     
-    # LocalStorageから読み込み試行（初回のみ）
-    if not st.session_state.get("localstorage_loaded"):
-        load_from_localstorage()
-        st.session_state["localstorage_loaded"] = True
+    # ログイン方法に応じたメッセージ
+    if st.session_state.get("login_type") == "master":
+        # 共通パスワードでログインした場合
+        st.markdown("""
+        <div class="hint-box">
+            💡 <strong>ヒント</strong>：通知設定タブでマイキーを設定すると、次回からそのキーでログインでき、設定が自動で読み込まれます！
+        </div>
+        """, unsafe_allow_html=True)
+    elif st.session_state.get("login_type") == "personal":
+        # 個人キーでログインした場合
+        email = st.session_state.get("email_address", "")
+        masked_email = email[:3] + "***" + email[email.find("@"):] if email and "@" in email else ""
+        st.markdown(f"""
+        <div class="success-box">
+            🎉 <strong>設定を自動で読み込みました！</strong><br>
+            <span style="font-size:0.8rem;">メール: {masked_email}</span>
+        </div>
+        """, unsafe_allow_html=True)
     
     # データ読み込み
     data = load_data()
@@ -699,35 +827,77 @@ def show_main_page():
         st.markdown("### 🔔 メール通知設定")
         st.markdown('<p style="color:#666;font-size:0.8rem;">出来高急動（1.5倍以上）を検知した際に通知を受け取れます</p>', unsafe_allow_html=True)
         
-        email = st.text_input("Gmailアドレス", value=st.session_state.get("email_address", ""), placeholder="example@gmail.com")
-        app_password = st.text_input("アプリパスワード（16桁）", value=st.session_state.get("app_password", ""), type="password", placeholder="xxxx xxxx xxxx xxxx")
+        # マイキー説明
+        st.markdown("""
+        <div class="access-key-info">
+            🔑 <strong>マイキーとは？</strong><br>
+            あなた専用のログインキーです。設定すると、次回からこのキーでログインでき、設定が自動で読み込まれます。<br>
+            <span style="color:#666;font-size:0.75rem;">例: tanaka123、mykey_2024 など（覚えやすいものを推奨）</span>
+        </div>
+        """, unsafe_allow_html=True)
         
+        # 現在のマイキー表示
+        current_key = st.session_state.get("access_key", "")
+        if current_key:
+            st.markdown(f"""
+            <div style="background:#E8F5E9;border-radius:8px;padding:0.5rem 1rem;margin-bottom:1rem;font-size:0.85rem;">
+                ✅ 現在のマイキー: <strong>{current_key}</strong>
+            </div>
+            """, unsafe_allow_html=True)
+        
+        # マイキー入力
+        access_key = st.text_input(
+            "🔑 マイキー（ログイン用）",
+            value=st.session_state.get("access_key", ""),
+            placeholder="任意の文字列を入力（例: mykey123）",
+            key="access_key_input"
+        )
+        
+        # メール設定入力
+        email = st.text_input(
+            "Gmailアドレス",
+            value=st.session_state.get("email_address", ""),
+            placeholder="example@gmail.com"
+        )
+        app_password = st.text_input(
+            "アプリパスワード（16桁）",
+            value=st.session_state.get("app_password", ""),
+            type="password",
+            placeholder="xxxx xxxx xxxx xxxx"
+        )
+        
+        # ボタン行
         col1, col2 = st.columns(2)
+        
         with col1:
             if st.button("💾 保存", use_container_width=True):
-                st.session_state["email_address"] = email
-                st.session_state["app_password"] = app_password
-                # LocalStorageに保存
-                save_to_localstorage(email, app_password)
-                st.success("✅ 保存しました（この端末に記憶されます）")
+                if not access_key:
+                    st.warning("⚠️ マイキーを入力してください")
+                elif not email:
+                    st.warning("⚠️ メールアドレスを入力してください")
+                elif access_key == MASTER_PASSWORD:
+                    st.error("❌ 共通パスワードはマイキーに使用できません")
+                else:
+                    with st.spinner("保存中..."):
+                        if save_settings_to_sheet(access_key, email, app_password):
+                            st.session_state["access_key"] = access_key
+                            st.session_state["email_address"] = email
+                            st.session_state["app_password"] = app_password
+                            st.success(f"✅ 保存しました！次回から「{access_key}」でログインできます")
+                        else:
+                            st.error("❌ 保存に失敗しました")
+        
         with col2:
             if st.button("🧪 テスト送信", use_container_width=True):
                 if email and app_password:
-                    ok, msg = send_test_email(email, app_password)
-                    if ok:
-                        st.success(f"✅ {msg}")
-                    else:
-                        st.error(f"❌ {msg}")
+                    with st.spinner("送信中..."):
+                        ok, msg = send_test_email(email, app_password)
+                        if ok:
+                            st.success(f"✅ {msg}")
+                        else:
+                            st.error(f"❌ {msg}")
                 else:
-                    st.warning("入力してください")
-        
-        # 設定クリアボタン
-        if st.button("🗑️ 保存した設定をクリア", use_container_width=True):
-            st.session_state["email_address"] = ""
-            st.session_state["app_password"] = ""
-            clear_localstorage()
-            st.success("✅ 設定をクリアしました")
-            st.rerun()
+                    st.warning("⚠️ メールアドレスとパスワードを入力してください")
         
         with st.expander("📖 アプリパスワードの取得方法"):
             st.markdown("""
@@ -740,8 +910,13 @@ def show_main_page():
             """)
         
         st.markdown("""
-        <div style="background:#FFF5F5;border-radius:8px;padding:0.8rem;margin-top:1rem;font-size:0.75rem;color:#666;border:1px solid #FFE0E0;">
-            🔒 設定はこの端末のブラウザに保存されます（他の人からは見えません）
+        <div style="background:#FFF5F5;border-radius:8px;padding:1rem;margin-top:1rem;font-size:0.8rem;color:#555;border:1px solid #FFE0E0;">
+            <p style="font-weight:bold;color:#C41E3A;margin-bottom:0.5rem;">🔒 セキュリティについて</p>
+            <ul style="margin:0;padding-left:1.2rem;color:#666;">
+                <li>アプリパスワードは<strong>暗号化</strong>して保存されます</li>
+                <li>マイキーは他人に教えないでください</li>
+                <li>どの端末・ブラウザからでも同じキーでログインできます</li>
+            </ul>
         </div>
         """, unsafe_allow_html=True)
         
@@ -749,6 +924,10 @@ def show_main_page():
         st.markdown("---")
         if st.button("🚪 ログアウト", use_container_width=True):
             st.session_state["logged_in"] = False
+            st.session_state["login_type"] = None
+            st.session_state["access_key"] = ""
+            st.session_state["email_address"] = ""
+            st.session_state["app_password"] = ""
             st.rerun()
 
 
