@@ -424,7 +424,8 @@ def load_settings_by_email(email: str) -> Optional[Dict]:
     
     try:
         conn = get_gsheets_connection()
-        df = conn.read(worksheet="settings", usecols=[0, 1], ttl=5)
+        # ttl=0でキャッシュを無効化（常に最新データを取得）
+        df = conn.read(worksheet="settings", usecols=[0, 1], ttl=0)
         
         if df is None or df.empty:
             return None
@@ -432,8 +433,9 @@ def load_settings_by_email(email: str) -> Optional[Dict]:
         # カラム名を正規化
         df.columns = ["email", "encrypted_password"]
         
-        # メールアドレスで検索
-        row = df[df["email"] == email.lower().strip()]
+        # メールアドレスで検索（小文字化・トリム）
+        email_normalized = email.lower().strip()
+        row = df[df["email"].str.lower().str.strip() == email_normalized]
         
         if row.empty:
             return None
@@ -443,6 +445,8 @@ def load_settings_by_email(email: str) -> Optional[Dict]:
             "encrypted_password": row.iloc[0]["encrypted_password"]
         }
     except Exception as e:
+        # エラー時はキャッシュをクリアして再試行
+        st.cache_data.clear()
         return None
 
 
@@ -481,6 +485,9 @@ def save_settings_to_sheet(email: str, app_password: str) -> bool:
         
         # スプレッドシートに書き込み
         conn.update(worksheet="settings", data=df)
+        
+        # キャッシュをクリア（次回読み込み時に最新データを取得）
+        st.cache_data.clear()
         
         return True
     except Exception as e:
@@ -639,6 +646,9 @@ def show_login_page():
         
         # ログインボタン
         if st.button("ログイン", use_container_width=True):
+            # キャッシュをクリア（新しいセッションの開始）
+            st.cache_data.clear()
+            
             # 共通パスワードでログイン
             if login_input == MASTER_PASSWORD:
                 st.session_state["logged_in"] = True
@@ -649,15 +659,21 @@ def show_login_page():
                 st.rerun()
             else:
                 # メールアドレスとしてスプレッドシートを検索
-                settings = load_settings_by_email(login_input)
-                if settings:
-                    st.session_state["logged_in"] = True
-                    st.session_state["login_error"] = False
-                    st.session_state["login_type"] = "email"
-                    st.session_state["email_address"] = settings["email"]
-                    st.session_state["app_password"] = decrypt_password(settings["encrypted_password"])
-                    st.rerun()
-                else:
+                try:
+                    settings = load_settings_by_email(login_input)
+                    if settings:
+                        st.session_state["logged_in"] = True
+                        st.session_state["login_error"] = False
+                        st.session_state["login_type"] = "email"
+                        st.session_state["email_address"] = settings["email"]
+                        st.session_state["app_password"] = decrypt_password(settings["encrypted_password"])
+                        st.rerun()
+                    else:
+                        st.session_state["login_error"] = True
+                        st.rerun()
+                except Exception as e:
+                    # エラー時はキャッシュをクリアしてエラー表示
+                    st.cache_data.clear()
                     st.session_state["login_error"] = True
                     st.rerun()
         
@@ -888,10 +904,14 @@ def show_main_page():
         # ログアウトボタン
         st.markdown("---")
         if st.button("🚪 ログアウト", use_container_width=True):
+            # キャッシュをクリア
+            st.cache_data.clear()
+            # セッション状態をリセット
             st.session_state["logged_in"] = False
             st.session_state["login_type"] = None
             st.session_state["email_address"] = ""
             st.session_state["app_password"] = ""
+            st.session_state["login_error"] = False
             st.rerun()
 
 
