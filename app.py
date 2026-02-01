@@ -1,6 +1,6 @@
 """
 源太AI🤖ハゲタカSCOPE - 統合版
-- ログイン機能（共通パスワード or 個人キー）
+- ログイン機能（共通パスワード or 登録済みメールアドレス）
 - 出来高急動モニター（GitHub Actionsで自動更新）
 - 利用者ごとのメール通知機能（Google Sheets永続化）
 """
@@ -351,17 +351,6 @@ p, span, label, div { color: #333; }
     font-size: 0.85rem;
     color: #333;
 }
-
-/* アクセスキー説明ボックス */
-.access-key-info {
-    background: #F0F8FF;
-    border: 1px solid #B0D4F1;
-    border-radius: 8px;
-    padding: 0.8rem;
-    margin-bottom: 1rem;
-    font-size: 0.8rem;
-    color: #333;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -428,23 +417,23 @@ def get_gsheets_connection():
     return st.connection("gsheets", type=GSheetsConnection)
 
 
-def load_settings_from_sheet(access_key: str) -> Optional[Dict]:
-    """スプレッドシートから設定を読み込み"""
-    if not access_key:
+def load_settings_by_email(email: str) -> Optional[Dict]:
+    """メールアドレスでスプレッドシートから設定を読み込み"""
+    if not email:
         return None
     
     try:
         conn = get_gsheets_connection()
-        df = conn.read(worksheet="settings", usecols=[0, 1, 2], ttl=5)
+        df = conn.read(worksheet="settings", usecols=[0, 1], ttl=5)
         
         if df is None or df.empty:
             return None
         
         # カラム名を正規化
-        df.columns = ["access_key", "email", "encrypted_password"]
+        df.columns = ["email", "encrypted_password"]
         
-        # アクセスキーで検索
-        row = df[df["access_key"] == access_key]
+        # メールアドレスで検索
+        row = df[df["email"] == email.lower().strip()]
         
         if row.empty:
             return None
@@ -457,40 +446,34 @@ def load_settings_from_sheet(access_key: str) -> Optional[Dict]:
         return None
 
 
-def check_access_key_exists(access_key: str) -> bool:
-    """アクセスキーが存在するかチェック"""
-    settings = load_settings_from_sheet(access_key)
-    return settings is not None
-
-
-def save_settings_to_sheet(access_key: str, email: str, app_password: str) -> bool:
-    """スプレッドシートに設定を保存（既存キーなら更新）"""
-    if not access_key:
+def save_settings_to_sheet(email: str, app_password: str) -> bool:
+    """スプレッドシートに設定を保存（既存メールなら更新）"""
+    if not email:
         return False
+    
+    email = email.lower().strip()  # 小文字化＆トリム
     
     try:
         conn = get_gsheets_connection()
         
         # 現在のデータを読み込み
         try:
-            df = conn.read(worksheet="settings", usecols=[0, 1, 2], ttl=0)
+            df = conn.read(worksheet="settings", usecols=[0, 1], ttl=0)
             if df is not None and not df.empty:
-                df.columns = ["access_key", "email", "encrypted_password"]
+                df.columns = ["email", "encrypted_password"]
             else:
-                df = pd.DataFrame(columns=["access_key", "email", "encrypted_password"])
+                df = pd.DataFrame(columns=["email", "encrypted_password"])
         except Exception:
-            df = pd.DataFrame(columns=["access_key", "email", "encrypted_password"])
+            df = pd.DataFrame(columns=["email", "encrypted_password"])
         
         # パスワードを暗号化
         encrypted_pw = encrypt_password(app_password)
         
-        # 既存キーがあれば更新、なければ追加
-        if access_key in df["access_key"].values:
-            df.loc[df["access_key"] == access_key, "email"] = email
-            df.loc[df["access_key"] == access_key, "encrypted_password"] = encrypted_pw
+        # 既存メールがあれば更新、なければ追加
+        if email in df["email"].values:
+            df.loc[df["email"] == email, "encrypted_password"] = encrypted_pw
         else:
             new_row = pd.DataFrame({
-                "access_key": [access_key],
                 "email": [email],
                 "encrypted_password": [encrypted_pw]
             })
@@ -642,35 +625,35 @@ def show_login_page():
         if st.session_state.get("login_error"):
             st.markdown("""
             <div class="login-error">
-                ❌ パスワードが正しくありません
+                ❌ パスワードまたはメールアドレスが正しくありません
             </div>
             """, unsafe_allow_html=True)
         
-        # パスワード入力
-        password = st.text_input(
-            "パスワード",
-            type="password",
-            placeholder="共通パスワード or マイキー",
-            key="login_password_input"
+        # パスワード/メールアドレス入力
+        login_input = st.text_input(
+            "パスワード / メールアドレス",
+            type="default",
+            placeholder="共通パスワード or 登録済みメールアドレス",
+            key="login_input"
         )
         
         # ログインボタン
         if st.button("ログイン", use_container_width=True):
             # 共通パスワードでログイン
-            if password == MASTER_PASSWORD:
+            if login_input == MASTER_PASSWORD:
                 st.session_state["logged_in"] = True
                 st.session_state["login_error"] = False
-                st.session_state["login_type"] = "master"  # 共通パスワードでログイン
-                st.session_state["access_key"] = ""
+                st.session_state["login_type"] = "master"
+                st.session_state["email_address"] = ""
+                st.session_state["app_password"] = ""
                 st.rerun()
             else:
-                # 個人キーとしてスプレッドシートを検索
-                settings = load_settings_from_sheet(password)
+                # メールアドレスとしてスプレッドシートを検索
+                settings = load_settings_by_email(login_input)
                 if settings:
                     st.session_state["logged_in"] = True
                     st.session_state["login_error"] = False
-                    st.session_state["login_type"] = "personal"  # 個人キーでログイン
-                    st.session_state["access_key"] = password
+                    st.session_state["login_type"] = "email"
                     st.session_state["email_address"] = settings["email"]
                     st.session_state["app_password"] = decrypt_password(settings["encrypted_password"])
                     st.rerun()
@@ -683,7 +666,7 @@ def show_login_page():
         <div style="background:#F5F5F5;border-radius:8px;padding:0.8rem;margin-top:1rem;font-size:0.75rem;color:#666;text-align:left;">
             <p style="margin:0 0 0.3rem 0;font-weight:bold;">💡 ログイン方法</p>
             <p style="margin:0 0 0.2rem 0;">• <strong>初回の方</strong>：共通パスワードを入力</p>
-            <p style="margin:0;">• <strong>2回目以降</strong>：ご自身のマイキーを入力すると設定が自動で読み込まれます</p>
+            <p style="margin:0;">• <strong>2回目以降</strong>：登録済みのメールアドレスを入力</p>
         </div>
         """, unsafe_allow_html=True)
         
@@ -719,11 +702,11 @@ def show_main_page():
         # 共通パスワードでログインした場合
         st.markdown("""
         <div class="hint-box">
-            💡 <strong>ヒント</strong>：通知設定タブでマイキーを設定すると、次回からそのキーでログインでき、設定が自動で読み込まれます！
+            💡 <strong>ヒント</strong>：通知設定タブでメール設定を保存すると、次回からメールアドレスでログインでき、設定が自動で読み込まれます！
         </div>
         """, unsafe_allow_html=True)
-    elif st.session_state.get("login_type") == "personal":
-        # 個人キーでログインした場合
+    elif st.session_state.get("login_type") == "email":
+        # メールアドレスでログインした場合
         email = st.session_state.get("email_address", "")
         masked_email = email[:3] + "***" + email[email.find("@"):] if email and "@" in email else ""
         st.markdown(f"""
@@ -827,31 +810,14 @@ def show_main_page():
         st.markdown("### 🔔 メール通知設定")
         st.markdown('<p style="color:#666;font-size:0.8rem;">出来高急動（1.5倍以上）を検知した際に通知を受け取れます</p>', unsafe_allow_html=True)
         
-        # マイキー説明
-        st.markdown("""
-        <div class="access-key-info">
-            🔑 <strong>マイキーとは？</strong><br>
-            あなた専用のログインキーです。設定すると、次回からこのキーでログインでき、設定が自動で読み込まれます。<br>
-            <span style="color:#666;font-size:0.75rem;">例: tanaka123、mykey_2024 など（覚えやすいものを推奨）</span>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        # 現在のマイキー表示
-        current_key = st.session_state.get("access_key", "")
-        if current_key:
+        # 現在のメールアドレス表示（ログイン済みの場合）
+        current_email = st.session_state.get("email_address", "")
+        if current_email:
             st.markdown(f"""
             <div style="background:#E8F5E9;border-radius:8px;padding:0.5rem 1rem;margin-bottom:1rem;font-size:0.85rem;">
-                ✅ 現在のマイキー: <strong>{current_key}</strong>
+                ✅ ログイン中: <strong>{current_email}</strong>
             </div>
             """, unsafe_allow_html=True)
-        
-        # マイキー入力
-        access_key = st.text_input(
-            "🔑 マイキー（ログイン用）",
-            value=st.session_state.get("access_key", ""),
-            placeholder="任意の文字列を入力（例: mykey123）",
-            key="access_key_input"
-        )
         
         # メール設定入力
         email = st.text_input(
@@ -871,19 +837,18 @@ def show_main_page():
         
         with col1:
             if st.button("💾 保存", use_container_width=True):
-                if not access_key:
-                    st.warning("⚠️ マイキーを入力してください")
-                elif not email:
+                if not email:
                     st.warning("⚠️ メールアドレスを入力してください")
-                elif access_key == MASTER_PASSWORD:
-                    st.error("❌ 共通パスワードはマイキーに使用できません")
+                elif "@" not in email:
+                    st.warning("⚠️ 正しいメールアドレスを入力してください")
+                elif not app_password:
+                    st.warning("⚠️ アプリパスワードを入力してください")
                 else:
                     with st.spinner("保存中..."):
-                        if save_settings_to_sheet(access_key, email, app_password):
-                            st.session_state["access_key"] = access_key
-                            st.session_state["email_address"] = email
+                        if save_settings_to_sheet(email, app_password):
+                            st.session_state["email_address"] = email.lower().strip()
                             st.session_state["app_password"] = app_password
-                            st.success(f"✅ 保存しました！次回から「{access_key}」でログインできます")
+                            st.success(f"✅ 保存しました！次回から「{email}」でログインできます")
                         else:
                             st.error("❌ 保存に失敗しました")
         
@@ -914,8 +879,8 @@ def show_main_page():
             <p style="font-weight:bold;color:#C41E3A;margin-bottom:0.5rem;">🔒 セキュリティについて</p>
             <ul style="margin:0;padding-left:1.2rem;color:#666;">
                 <li>アプリパスワードは<strong>暗号化</strong>して保存されます</li>
-                <li>マイキーは他人に教えないでください</li>
-                <li>どの端末・ブラウザからでも同じキーでログインできます</li>
+                <li>次回からメールアドレスでログインできます</li>
+                <li>どの端末・ブラウザからでも同じメールアドレスでログイン可能</li>
             </ul>
         </div>
         """, unsafe_allow_html=True)
@@ -925,7 +890,6 @@ def show_main_page():
         if st.button("🚪 ログアウト", use_container_width=True):
             st.session_state["logged_in"] = False
             st.session_state["login_type"] = None
-            st.session_state["access_key"] = ""
             st.session_state["email_address"] = ""
             st.session_state["app_password"] = ""
             st.rerun()
