@@ -747,7 +747,7 @@ def show_main_page():
             st.markdown(f"""
             <div class="update-info">
                 📡 最終更新: <strong>{updated_at}</strong><br>
-                <span style="font-size:0.7rem;color:#666;">毎日 16:30 JST に自動更新されます</span>
+                <span style="font-size:0.7rem;color:#666;">平日 16:30頃 に自動更新（土日祝は更新なし）</span>
             </div>
             """, unsafe_allow_html=True)
             
