@@ -24,7 +24,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install yfinance pandas pytz gspread google-auth cryptography
+          pip install yfinance pandas pytz gspread google-auth cryptography openpyxl xlrd
 
       - name: Run data fetch script
         run: |
