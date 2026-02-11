@@ -1,11 +1,11 @@
 {
-  "updated_at": "2026-02-10 19:39:25",
-  "date": "2026-02-10",
+  "updated_at": "2026-02-11 19:14:36",
+  "date": "2026-02-11",
   "market_cap_range": "300億〜2000億円",
-  "total_count": 322,
-  "all_count": 891,
-  "spike_high_count": 34,
-  "spike_medium_count": 107,
+  "total_count": 303,
+  "all_count": 879,
+  "spike_high_count": 32,
+  "spike_medium_count": 103,
   "data": {
     "6328.T": {
       "name": "荏原実業",
@@ -14,15 +14,6 @@
       "ratio": 9.6,
       "price": 2601.0,
       "market_cap_oku": 620,
-      "in_cap_range": true
-    },
-    "9880.T": {
-      "name": "イノテック",
-      "volume": 715600,
-      "avg_volume": 86211,
-      "ratio": 8.3,
-      "price": 2779.0,
-      "market_cap_oku": 338,
       "in_cap_range": true
     },
     "6480.T": {
@@ -275,15 +266,6 @@
       "ratio": 3.18,
       "price": 7640.0,
       "market_cap_oku": 1778,
-      "in_cap_range": true
-    },
-    "9757.T": {
-      "name": "船井総研ホールディングス",
-      "volume": 674700,
-      "avg_volume": 215091,
-      "ratio": 3.14,
-      "price": 1121.0,
-      "market_cap_oku": 1019,
       "in_cap_range": true
     },
     "2461.T": {
@@ -745,15 +727,6 @@
       "market_cap_oku": 554,
       "in_cap_range": true
     },
-    "9948.T": {
-      "name": "アークス",
-      "volume": 156500,
-      "avg_volume": 90727,
-      "ratio": 1.72,
-      "price": 3710.0,
-      "market_cap_oku": 1977,
-      "in_cap_range": true
-    },
     "8393.T": {
       "name": "宮崎銀行",
       "volume": 89100,
@@ -871,15 +844,6 @@
       "market_cap_oku": 439,
       "in_cap_range": true
     },
-    "9837.T": {
-      "name": "モリト",
-      "volume": 124900,
-      "avg_volume": 79633,
-      "ratio": 1.57,
-      "price": 1942.0,
-      "market_cap_oku": 474,
-      "in_cap_range": true
-    },
     "6258.T": {
       "name": "平田機工",
       "volume": 386200,
@@ -904,7 +868,7 @@
       "avg_volume": 195346,
       "ratio": 1.55,
       "price": 1618.0,
-      "market_cap_oku": 1096,
+      "market_cap_oku": 1093,
       "in_cap_range": true
     },
     "1926.T": {
@@ -1031,15 +995,6 @@
       "ratio": 1.43,
       "price": 2256.0,
       "market_cap_oku": 1960,
-      "in_cap_range": true
-    },
-    "9793.T": {
-      "name": "ダイセキ",
-      "volume": 209400,
-      "avg_volume": 146677,
-      "ratio": 1.43,
-      "price": 3760.0,
-      "market_cap_oku": 1778,
       "in_cap_range": true
     },
     "3196.T": {
@@ -1276,15 +1231,6 @@
       "market_cap_oku": 450,
       "in_cap_range": true
     },
-    "9928.T": {
-      "name": "ミロク情報サービス",
-      "volume": 43700,
-      "avg_volume": 33719,
-      "ratio": 1.3,
-      "price": 1824.0,
-      "market_cap_oku": 546,
-      "in_cap_range": true
-    },
     "6905.T": {
       "name": "コーセル",
       "volume": 143600,
@@ -1336,7 +1282,7 @@
       "avg_volume": 98744,
       "ratio": 1.28,
       "price": 4010.0,
-      "market_cap_oku": 1392,
+      "market_cap_oku": 1389,
       "in_cap_range": true
     },
     "8154.T": {
@@ -1373,15 +1319,6 @@
       "ratio": 1.26,
       "price": 1035.0,
       "market_cap_oku": 1078,
-      "in_cap_range": true
-    },
-    "9889.T": {
-      "name": "JBCCホールディングス",
-      "volume": 234500,
-      "avg_volume": 186066,
-      "ratio": 1.26,
-      "price": 1440.0,
-      "market_cap_oku": 992,
       "in_cap_range": true
     },
     "2117.T": {
@@ -1687,16 +1624,7 @@
       "avg_volume": 263345,
       "ratio": 1.1,
       "price": 3295.0,
-      "market_cap_oku": 1295,
-      "in_cap_range": true
-    },
-    "9902.T": {
-      "name": "日伝",
-      "volume": 35400,
-      "avg_volume": 32102,
-      "ratio": 1.1,
-      "price": 2560.0,
-      "market_cap_oku": 756,
+      "market_cap_oku": 1298,
       "in_cap_range": true
     },
     "6118.T": {
@@ -1915,15 +1843,6 @@
       "market_cap_oku": 460,
       "in_cap_range": true
     },
-    "9974.T": {
-      "name": "ベルク",
-      "volume": 29000,
-      "avg_volume": 28948,
-      "ratio": 1.0,
-      "price": 7720.0,
-      "market_cap_oku": 1608,
-      "in_cap_range": true
-    },
     "4449.T": {
       "name": "ギフティ",
       "volume": 437500,
@@ -1931,15 +1850,6 @@
       "ratio": 0.99,
       "price": 1248.0,
       "market_cap_oku": 370,
-      "in_cap_range": true
-    },
-    "9842.T": {
-      "name": "アークランズ",
-      "volume": 253400,
-      "avg_volume": 255263,
-      "ratio": 0.99,
-      "price": 2004.0,
-      "market_cap_oku": 1259,
       "in_cap_range": true
     },
     "2211.T": {
@@ -2086,15 +1996,6 @@
       "market_cap_oku": 392,
       "in_cap_range": true
     },
-    "9832.T": {
-      "name": "オートバックスセブン",
-      "volume": 194100,
-      "avg_volume": 214119,
-      "ratio": 0.91,
-      "price": 1682.0,
-      "market_cap_oku": 1321,
-      "in_cap_range": true
-    },
     "1967.T": {
       "name": "ヤマト",
       "volume": 42500,
@@ -2185,15 +2086,6 @@
       "market_cap_oku": 404,
       "in_cap_range": true
     },
-    "9795.T": {
-      "name": "ステップ",
-      "volume": 12600,
-      "avg_volume": 14247,
-      "ratio": 0.88,
-      "price": 2498.0,
-      "market_cap_oku": 391,
-      "in_cap_range": true
-    },
     "8585.T": {
       "name": "オリエントコーポレーション",
       "volume": 520000,
@@ -2275,15 +2167,6 @@
       "market_cap_oku": 700,
       "in_cap_range": true
     },
-    "9956.T": {
-      "name": "バローホールディングス",
-      "volume": 78900,
-      "avg_volume": 94188,
-      "ratio": 0.84,
-      "price": 3660.0,
-      "market_cap_oku": 1928,
-      "in_cap_range": true
-    },
     "1899.T": {
       "name": "福田組",
       "volume": 25200,
@@ -2347,15 +2230,6 @@
       "market_cap_oku": 670,
       "in_cap_range": true
     },
-    "9882.T": {
-      "name": "イエローハット",
-      "volume": 166500,
-      "avg_volume": 208012,
-      "ratio": 0.8,
-      "price": 1659.0,
-      "market_cap_oku": 1420,
-      "in_cap_range": true
-    },
     "8345.T": {
       "name": "岩手銀行",
       "volume": 38500,
@@ -2380,7 +2254,7 @@
       "avg_volume": 77186,
       "ratio": 0.77,
       "price": 3450.0,
-      "market_cap_oku": 1622,
+      "market_cap_oku": 1619,
       "in_cap_range": true
     },
     "4553.T": {
@@ -2534,15 +2408,6 @@
       "ratio": 0.68,
       "price": 7580.0,
       "market_cap_oku": 1786,
-      "in_cap_range": true
-    },
-    "9936.T": {
-      "name": "王将フードサービス",
-      "volume": 95700,
-      "avg_volume": 140461,
-      "ratio": 0.68,
-      "price": 3230.0,
-      "market_cap_oku": 1691,
       "in_cap_range": true
     },
     "3093.T": {
@@ -2725,15 +2590,6 @@
       "market_cap_oku": 1407,
       "in_cap_range": true
     },
-    "9824.T": {
-      "name": "泉州電業",
-      "volume": 41000,
-      "avg_volume": 77865,
-      "ratio": 0.53,
-      "price": 6380.0,
-      "market_cap_oku": 1092,
-      "in_cap_range": true
-    },
     "8079.T": {
       "name": "正栄食品工業",
       "volume": 21300,
@@ -2743,15 +2599,6 @@
       "market_cap_oku": 680,
       "in_cap_range": true
     },
-    "9997.T": {
-      "name": "ベルーナ",
-      "volume": 148400,
-      "avg_volume": 294256,
-      "ratio": 0.5,
-      "price": 971.0,
-      "market_cap_oku": 935,
-      "in_cap_range": true
-    },
     "8150.T": {
       "name": "三信電気",
       "volume": 45500,
@@ -2759,15 +2606,6 @@
       "ratio": 0.48,
       "price": 3150.0,
       "market_cap_oku": 386,
-      "in_cap_range": true
-    },
-    "9856.T": {
-      "name": "ケーユーホールディングス",
-      "volume": 19200,
-      "avg_volume": 40553,
-      "ratio": 0.47,
-      "price": 1291.0,
-      "market_cap_oku": 405,
       "in_cap_range": true
     },
     "1827.T": {
@@ -2840,15 +2678,6 @@
       "ratio": 0.29,
       "price": 1970.0,
       "market_cap_oku": 1537,
-      "in_cap_range": true
-    },
-    "9906.T": {
-      "name": "藤井産業",
-      "volume": 1700,
-      "avg_volume": 6181,
-      "ratio": 0.28,
-      "price": 4305.0,
-      "market_cap_oku": 364,
       "in_cap_range": true
     },
     "3825.T": {
@@ -2942,15 +2771,6 @@
       "price": 539.0,
       "market_cap_oku": 171,
       "in_cap_range": false
-    },
-    "9880.T": {
-      "name": "イノテック",
-      "volume": 715600,
-      "avg_volume": 86211,
-      "ratio": 8.3,
-      "price": 2779.0,
-      "market_cap_oku": 338,
-      "in_cap_range": true
     },
     "6302.T": {
       "name": "住友重機械工業",
@@ -3354,8 +3174,8 @@
       "avg_volume": 215091,
       "ratio": 3.14,
       "price": 1121.0,
-      "market_cap_oku": 1019,
-      "in_cap_range": true
+      "market_cap_oku": 0,
+      "in_cap_range": false
     },
     "2802.T": {
       "name": "味の素",
@@ -3831,7 +3651,7 @@
       "avg_volume": 183014,
       "ratio": 2.11,
       "price": 3164.0,
-      "market_cap_oku": 2405,
+      "market_cap_oku": 0,
       "in_cap_range": false
     },
     "1965.T": {
@@ -4057,15 +3877,6 @@
       "ratio": 1.9,
       "price": 4335.0,
       "market_cap_oku": 29800,
-      "in_cap_range": false
-    },
-    "9908.T": {
-      "name": "日本電計",
-      "volume": 21000,
-      "avg_volume": 11025,
-      "ratio": 1.9,
-      "price": 2649.0,
-      "market_cap_oku": 299,
       "in_cap_range": false
     },
     "6845.T": {
@@ -4362,7 +4173,7 @@
       "avg_volume": 523991,
       "ratio": 1.72,
       "price": 19500.0,
-      "market_cap_oku": 26434,
+      "market_cap_oku": 0,
       "in_cap_range": false
     },
     "9948.T": {
@@ -4371,8 +4182,8 @@
       "avg_volume": 90727,
       "ratio": 1.72,
       "price": 3710.0,
-      "market_cap_oku": 1977,
-      "in_cap_range": true
+      "market_cap_oku": 0,
+      "in_cap_range": false
     },
     "7189.T": {
       "name": "西日本フィナンシャルホールディングス",
@@ -4497,7 +4308,7 @@
       "avg_volume": 123120,
       "ratio": 1.65,
       "price": 21015.0,
-      "market_cap_oku": 6941,
+      "market_cap_oku": 6878,
       "in_cap_range": false
     },
     "9687.T": {
@@ -4704,8 +4515,8 @@
       "avg_volume": 79633,
       "ratio": 1.57,
       "price": 1942.0,
-      "market_cap_oku": 474,
-      "in_cap_range": true
+      "market_cap_oku": 0,
+      "in_cap_range": false
     },
     "6758.T": {
       "name": "ソニーグループ",
@@ -4749,7 +4560,7 @@
       "avg_volume": 195346,
       "ratio": 1.55,
       "price": 1618.0,
-      "market_cap_oku": 1096,
+      "market_cap_oku": 1093,
       "in_cap_range": true
     },
     "9076.T": {
@@ -4848,7 +4659,7 @@
       "avg_volume": 1482395,
       "ratio": 1.52,
       "price": 2314.0,
-      "market_cap_oku": 7240,
+      "market_cap_oku": 7215,
       "in_cap_range": false
     },
     "6954.T": {
@@ -4884,7 +4695,7 @@
       "avg_volume": 1004438,
       "ratio": 1.51,
       "price": 3187.0,
-      "market_cap_oku": 7977,
+      "market_cap_oku": 7964,
       "in_cap_range": false
     },
     "8113.T": {
@@ -5004,15 +4815,6 @@
       "market_cap_oku": 19312,
       "in_cap_range": false
     },
-    "9984.T": {
-      "name": "ソフトバンクグループ",
-      "volume": 80120100,
-      "avg_volume": 54240957,
-      "ratio": 1.48,
-      "price": 4705.0,
-      "market_cap_oku": 268113,
-      "in_cap_range": false
-    },
     "4385.T": {
       "name": "メルカリ",
       "volume": 5721800,
@@ -5100,7 +4902,7 @@
       "avg_volume": 85415,
       "ratio": 1.45,
       "price": 4964.0,
-      "market_cap_oku": 3032,
+      "market_cap_oku": 3027,
       "in_cap_range": false
     },
     "6976.T": {
@@ -5190,8 +4992,8 @@
       "avg_volume": 146677,
       "ratio": 1.43,
       "price": 3760.0,
-      "market_cap_oku": 1778,
-      "in_cap_range": true
+      "market_cap_oku": 0,
+      "in_cap_range": false
     },
     "3196.T": {
       "name": "ホットランド",
@@ -5316,7 +5118,7 @@
       "avg_volume": 479039,
       "ratio": 1.4,
       "price": 3153.0,
-      "market_cap_oku": 2041,
+      "market_cap_oku": 0,
       "in_cap_range": false
     },
     "1716.T": {
@@ -5739,7 +5541,7 @@
       "avg_volume": 6428032,
       "ratio": 1.32,
       "price": 5495.0,
-      "market_cap_oku": 156969,
+      "market_cap_oku": 156485,
       "in_cap_range": false
     },
     "8395.T": {
@@ -5821,15 +5623,6 @@
       "ratio": 1.3,
       "price": 3670.0,
       "market_cap_oku": 450,
-      "in_cap_range": true
-    },
-    "9928.T": {
-      "name": "ミロク情報サービス",
-      "volume": 43700,
-      "avg_volume": 33719,
-      "ratio": 1.3,
-      "price": 1824.0,
-      "market_cap_oku": 546,
       "in_cap_range": true
     },
     "4054.T": {
@@ -5919,7 +5712,7 @@
       "avg_volume": 1180934,
       "ratio": 1.29,
       "price": 68510.0,
-      "market_cap_oku": 210209,
+      "market_cap_oku": 0,
       "in_cap_range": false
     },
     "4482.T": {
@@ -5973,7 +5766,7 @@
       "avg_volume": 98744,
       "ratio": 1.28,
       "price": 4010.0,
-      "market_cap_oku": 1392,
+      "market_cap_oku": 1389,
       "in_cap_range": true
     },
     "8154.T": {
@@ -6055,15 +5848,6 @@
       "ratio": 1.26,
       "price": 1035.0,
       "market_cap_oku": 1078,
-      "in_cap_range": true
-    },
-    "9889.T": {
-      "name": "JBCCホールディングス",
-      "volume": 234500,
-      "avg_volume": 186066,
-      "ratio": 1.26,
-      "price": 1440.0,
-      "market_cap_oku": 992,
       "in_cap_range": true
     },
     "6754.T": {
@@ -6234,7 +6018,7 @@
       "avg_volume": 1913372,
       "ratio": 1.24,
       "price": 3335.0,
-      "market_cap_oku": 15537,
+      "market_cap_oku": 15394,
       "in_cap_range": false
     },
     "2201.T": {
@@ -6927,7 +6711,7 @@
       "avg_volume": 263345,
       "ratio": 1.1,
       "price": 3295.0,
-      "market_cap_oku": 1295,
+      "market_cap_oku": 1298,
       "in_cap_range": true
     },
     "8367.T": {
@@ -6954,8 +6738,8 @@
       "avg_volume": 32102,
       "ratio": 1.1,
       "price": 2560.0,
-      "market_cap_oku": 756,
-      "in_cap_range": true
+      "market_cap_oku": 0,
+      "in_cap_range": false
     },
     "6963.T": {
       "name": "ローム",
@@ -7080,7 +6864,7 @@
       "avg_volume": 194450,
       "ratio": 1.08,
       "price": 3500.0,
-      "market_cap_oku": 2140,
+      "market_cap_oku": 2133,
       "in_cap_range": false
     },
     "6371.T": {
@@ -7125,7 +6909,7 @@
       "avg_volume": 40575,
       "ratio": 1.08,
       "price": 6860.0,
-      "market_cap_oku": 2096,
+      "market_cap_oku": 0,
       "in_cap_range": false
     },
     "3659.T": {
@@ -7179,7 +6963,7 @@
       "avg_volume": 154099,
       "ratio": 1.07,
       "price": 9150.0,
-      "market_cap_oku": 4235,
+      "market_cap_oku": 4234,
       "in_cap_range": false
     },
     "9021.T": {
@@ -7305,7 +7089,7 @@
       "avg_volume": 204692,
       "ratio": 1.05,
       "price": 2783.0,
-      "market_cap_oku": 3106,
+      "market_cap_oku": 0,
       "in_cap_range": false
     },
     "6349.T": {
@@ -7587,15 +7371,6 @@
       "market_cap_oku": 2157,
       "in_cap_range": false
     },
-    "9974.T": {
-      "name": "ベルク",
-      "volume": 29000,
-      "avg_volume": 28948,
-      "ratio": 1.0,
-      "price": 7720.0,
-      "market_cap_oku": 1608,
-      "in_cap_range": true
-    },
     "4449.T": {
       "name": "ギフティ",
       "volume": 437500,
@@ -7620,8 +7395,8 @@
       "avg_volume": 255263,
       "ratio": 0.99,
       "price": 2004.0,
-      "market_cap_oku": 1259,
-      "in_cap_range": true
+      "market_cap_oku": 0,
+      "in_cap_range": false
     },
     "6146.T": {
       "name": "ディスコ",
@@ -8025,8 +7800,8 @@
       "avg_volume": 214119,
       "ratio": 0.91,
       "price": 1682.0,
-      "market_cap_oku": 1321,
-      "in_cap_range": true
+      "market_cap_oku": 0,
+      "in_cap_range": false
     },
     "3937.T": {
       "name": "Ubicomホールディングス",
@@ -8178,7 +7953,7 @@
       "avg_volume": 4282468,
       "ratio": 0.89,
       "price": 2938.0,
-      "market_cap_oku": 16601,
+      "market_cap_oku": 0,
       "in_cap_range": false
     },
     "3921.T": {
@@ -8286,8 +8061,8 @@
       "avg_volume": 14247,
       "ratio": 0.88,
       "price": 2498.0,
-      "market_cap_oku": 391,
-      "in_cap_range": true
+      "market_cap_oku": 0,
+      "in_cap_range": false
     },
     "1980.T": {
       "name": "ダイダン",
@@ -8404,15 +8179,6 @@
       "ratio": 0.86,
       "price": 1822.0,
       "market_cap_oku": 209,
-      "in_cap_range": false
-    },
-    "9932.T": {
-      "name": "杉本商事",
-      "volume": 42200,
-      "avg_volume": 49126,
-      "ratio": 0.86,
-      "price": 1469.0,
-      "market_cap_oku": 257,
       "in_cap_range": false
     },
     "4255.T": {
@@ -8585,15 +8351,6 @@
       "price": 4179.0,
       "market_cap_oku": 61317,
       "in_cap_range": false
-    },
-    "9956.T": {
-      "name": "バローホールディングス",
-      "volume": 78900,
-      "avg_volume": 94188,
-      "ratio": 0.84,
-      "price": 3660.0,
-      "market_cap_oku": 1928,
-      "in_cap_range": true
     },
     "1429.T": {
       "name": "日本アクア",
@@ -8838,15 +8595,6 @@
       "market_cap_oku": 670,
       "in_cap_range": true
     },
-    "9882.T": {
-      "name": "イエローハット",
-      "volume": 166500,
-      "avg_volume": 208012,
-      "ratio": 0.8,
-      "price": 1659.0,
-      "market_cap_oku": 1420,
-      "in_cap_range": true
-    },
     "4011.T": {
       "name": "ヘッドウォータース",
       "volume": 29800,
@@ -8872,15 +8620,6 @@
       "ratio": 0.79,
       "price": 1669.0,
       "market_cap_oku": 23051,
-      "in_cap_range": false
-    },
-    "9987.T": {
-      "name": "スズケン",
-      "volume": 157800,
-      "avg_volume": 199858,
-      "ratio": 0.79,
-      "price": 6569.0,
-      "market_cap_oku": 4501,
       "in_cap_range": false
     },
     "1914.T": {
@@ -8952,7 +8691,7 @@
       "avg_volume": 77186,
       "ratio": 0.77,
       "price": 3450.0,
-      "market_cap_oku": 1622,
+      "market_cap_oku": 1619,
       "in_cap_range": true
     },
     "9301.T": {
@@ -9483,8 +9222,8 @@
       "avg_volume": 140461,
       "ratio": 0.68,
       "price": 3230.0,
-      "market_cap_oku": 1691,
-      "in_cap_range": true
+      "market_cap_oku": 0,
+      "in_cap_range": false
     },
     "3926.T": {
       "name": "オープンドア",
@@ -9717,7 +9456,7 @@
       "avg_volume": 3385136,
       "ratio": 0.63,
       "price": 556.6,
-      "market_cap_oku": 3675,
+      "market_cap_oku": 0,
       "in_cap_range": false
     },
     "3900.T": {
@@ -9798,7 +9537,7 @@
       "avg_volume": 328375,
       "ratio": 0.61,
       "price": 4236.0,
-      "market_cap_oku": 4955,
+      "market_cap_oku": 0,
       "in_cap_range": false
     },
     "4436.T": {
@@ -9861,7 +9600,7 @@
       "avg_volume": 281809,
       "ratio": 0.59,
       "price": 10975.0,
-      "market_cap_oku": 8067,
+      "market_cap_oku": 7595,
       "in_cap_range": false
     },
     "9467.T": {
@@ -9879,7 +9618,7 @@
       "avg_volume": 50563,
       "ratio": 0.59,
       "price": 1014.0,
-      "market_cap_oku": 232,
+      "market_cap_oku": 0,
       "in_cap_range": false
     },
     "3934.T": {
@@ -10014,7 +9753,7 @@
       "avg_volume": 38617,
       "ratio": 0.54,
       "price": 1200.0,
-      "market_cap_oku": 191,
+      "market_cap_oku": 0,
       "in_cap_range": false
     },
     "4477.T": {
@@ -10059,8 +9798,8 @@
       "avg_volume": 77865,
       "ratio": 0.53,
       "price": 6380.0,
-      "market_cap_oku": 1092,
-      "in_cap_range": true
+      "market_cap_oku": 0,
+      "in_cap_range": false
     },
     "1959.T": {
       "name": "九電工",
@@ -10122,8 +9861,8 @@
       "avg_volume": 294256,
       "ratio": 0.5,
       "price": 971.0,
-      "market_cap_oku": 935,
-      "in_cap_range": true
+      "market_cap_oku": 0,
+      "in_cap_range": false
     },
     "4441.T": {
       "name": "トビラシステムズ",
@@ -10212,8 +9951,8 @@
       "avg_volume": 40553,
       "ratio": 0.47,
       "price": 1291.0,
-      "market_cap_oku": 405,
-      "in_cap_range": true
+      "market_cap_oku": 0,
+      "in_cap_range": false
     },
     "4598.T": {
       "name": "Delta-Fly Pharma",
@@ -10647,15 +10386,6 @@
       "market_cap_oku": 215,
       "in_cap_range": false
     },
-    "9906.T": {
-      "name": "藤井産業",
-      "volume": 1700,
-      "avg_volume": 6181,
-      "ratio": 0.28,
-      "price": 4305.0,
-      "market_cap_oku": 364,
-      "in_cap_range": true
-    },
     "4484.T": {
       "name": "ランサーズ",
       "volume": 24900,
@@ -10825,15 +10555,6 @@
       "ratio": 0.15,
       "price": 529.0,
       "market_cap_oku": 198,
-      "in_cap_range": false
-    },
-    "9913.T": {
-      "name": "日邦産業",
-      "volume": 500,
-      "avg_volume": 3408,
-      "ratio": 0.15,
-      "price": 2922.0,
-      "market_cap_oku": 265,
       "in_cap_range": false
     },
     "3386.T": {
