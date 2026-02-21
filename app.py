@@ -19,6 +19,8 @@ import pandas as pd
 
 # Google Sheets連携
 from streamlit_gsheets import GSheetsConnection
+import gspread
+from google.oauth2.service_account import Credentials
 
 # 暗号化
 from cryptography.fernet import Fernet
@@ -450,43 +452,77 @@ def load_settings_by_email(email: str) -> Optional[Dict]:
         return None
 
 
+def get_gspread_client():
+    """gspreadクライアントを取得（行単位操作用）"""
+    try:
+        # st.secretsからサービスアカウント情報を取得
+        credentials_dict = dict(st.secrets["connections"]["gsheets"])
+        
+        # spreadsheetキーがあれば除外（認証情報ではないため）
+        credentials_dict.pop("spreadsheet", None)
+        credentials_dict.pop("worksheet", None)
+        
+        scopes = [
+            "https://www.googleapis.com/auth/spreadsheets",
+            "https://www.googleapis.com/auth/drive"
+        ]
+        
+        credentials = Credentials.from_service_account_info(credentials_dict, scopes=scopes)
+        client = gspread.authorize(credentials)
+        return client
+    except Exception as e:
+        st.error(f"gspread接続エラー: {str(e)}")
+        return None
+
+
 def save_settings_to_sheet(email: str, app_password: str) -> bool:
-    """スプレッドシートに設定を保存（既存メールなら更新）"""
+    """スプレッドシートに設定を保存（行単位操作でデータ消失防止）"""
     if not email:
         return False
     
     email = email.lower().strip()  # 小文字化＆トリム
     
     try:
-        conn = get_gsheets_connection()
+        client = get_gspread_client()
+        if not client:
+            return False
         
-        # 現在のデータを読み込み
-        try:
-            df = conn.read(worksheet="settings", usecols=[0, 1], ttl=0)
-            if df is not None and not df.empty:
-                df.columns = ["email", "encrypted_password"]
-            else:
-                df = pd.DataFrame(columns=["email", "encrypted_password"])
-        except Exception:
-            df = pd.DataFrame(columns=["email", "encrypted_password"])
+        # スプレッドシートを開く
+        spreadsheet_url = st.secrets["connections"]["gsheets"].get("spreadsheet")
+        if not spreadsheet_url:
+            st.error("スプレッドシートURLが設定されていません")
+            return False
+        
+        spreadsheet = client.open_by_url(spreadsheet_url)
+        worksheet = spreadsheet.worksheet("settings")
         
         # パスワードを暗号化
         encrypted_pw = encrypt_password(app_password)
         
-        # 既存メールがあれば更新、なければ追加
-        if email in df["email"].values:
-            df.loc[df["email"] == email, "encrypted_password"] = encrypted_pw
+        # 既存のメールアドレスを検索
+        try:
+            all_emails = worksheet.col_values(1)  # A列（email列）を取得
+        except Exception:
+            all_emails = []
+        
+        # ヘッダー行を考慮（1行目がヘッダーの場合）
+        email_found = False
+        row_index = -1
+        
+        for i, cell_email in enumerate(all_emails):
+            if cell_email and cell_email.lower().strip() == email:
+                email_found = True
+                row_index = i + 1  # gspreadは1始まり
+                break
+        
+        if email_found and row_index > 1:  # ヘッダー行（1行目）は除外
+            # 既存ユーザー：該当行のパスワード列（B列）を更新
+            worksheet.update_cell(row_index, 2, encrypted_pw)
         else:
-            new_row = pd.DataFrame({
-                "email": [email],
-                "encrypted_password": [encrypted_pw]
-            })
-            df = pd.concat([df, new_row], ignore_index=True)
+            # 新規ユーザー：行を追記
+            worksheet.append_row([email, encrypted_pw])
         
-        # スプレッドシートに書き込み
-        conn.update(worksheet="settings", data=df)
-        
-        # キャッシュをクリア（次回読み込み時に最新データを取得）
+        # キャッシュをクリア
         st.cache_data.clear()
         
         return True
