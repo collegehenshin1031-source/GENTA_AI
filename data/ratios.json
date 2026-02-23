@@ -1,9 +1,9 @@
 {
-  "updated_at": "2026-02-20 17:03:34",
-  "date": "2026-02-20",
+  "updated_at": "2026-02-23 17:07:01",
+  "date": "2026-02-23",
   "market_cap_range": "300億〜2000億円",
-  "total_count": 323,
-  "all_count": 889,
+  "total_count": 322,
+  "all_count": 888,
   "spike_high_count": 13,
   "spike_medium_count": 72,
   "data": {
@@ -2903,15 +2903,6 @@
       "ratio": 0.02,
       "price": 2691.0,
       "market_cap_oku": 562,
-      "in_cap_range": true
-    },
-    "6937.T": {
-      "name": "古河電池",
-      "volume": 0,
-      "avg_volume": 0,
-      "ratio": 0,
-      "price": 8722605056.0,
-      "market_cap_oku": 457,
       "in_cap_range": true
     }
   },
@@ -10906,15 +10897,6 @@
       "ratio": 0.02,
       "price": 2691.0,
       "market_cap_oku": 562,
-      "in_cap_range": true
-    },
-    "6937.T": {
-      "name": "古河電池",
-      "volume": 0,
-      "avg_volume": 0,
-      "ratio": 0,
-      "price": 8722605056.0,
-      "market_cap_oku": 457,
       "in_cap_range": true
     }
   }
