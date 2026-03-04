@@ -372,7 +372,9 @@ def get_gspread_client():
         cd.pop("spreadsheet", None); cd.pop("worksheet", None)
         creds = Credentials.from_service_account_info(cd, scopes=["https://www.googleapis.com/auth/spreadsheets", "https://www.googleapis.com/auth/drive"])
         return gspread.authorize(creds)
-    except: return None
+    except Exception as e:
+        st.error(f"🚨 認証エラー詳細: {e}")
+        return None
 
 def save_settings_to_sheet(email: str, app_password: str) -> bool:
     if not email: return False
@@ -380,17 +382,27 @@ def save_settings_to_sheet(email: str, app_password: str) -> bool:
     try:
         client = get_gspread_client()
         if not client: return False
+        
         url = st.secrets["connections"]["gsheets"].get("spreadsheet")
         ws = client.open_by_url(url).worksheet("settings")
-        enc_pw = encrypt_password(app_password)
+        
+        try:
+            enc_pw = get_fernet().encrypt(app_password.encode()).decode()
+        except Exception as e:
+            st.error(f"🚨 暗号鍵エラー詳細: {e}")
+            return False
+
         try: all_emails = ws.col_values(1)
         except: all_emails = []
+        
         row_index = next((i + 1 for i, ce in enumerate(all_emails) if ce and ce.lower().strip() == email), -1)
         if row_index > 1: ws.update_cell(row_index, 2, enc_pw)
         else: ws.append_row([email, enc_pw])
         st.cache_data.clear()
         return True
-    except: return False
+    except Exception as e:
+        st.error(f"🚨 書き込みエラー詳細: {e}")
+        return False
 
 def delete_settings_from_sheet(email: str) -> bool:
     if not email: return False
