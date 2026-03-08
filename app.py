@@ -166,34 +166,43 @@ def evaluate_stock(ticker):
         stock = yf.Ticker(ticker)
         hist = stock.history(period="2y")
         
-        # 🚨 存在しない銘柄の場合は専用のフラグを返す
-        if hist.empty: 
+        # 🚨 1. データが全く存在しない場合は「NOT_FOUND」として返す
+        if hist is None or hist.empty: 
             return "NOT_FOUND"
             
-        info = stock.info
-        current_price = hist['Close'].iloc[-1]
-        current_vol = hist['Volume'].iloc[-1]
+        info = stock.info or {}
+        current_price = float(hist['Close'].iloc[-1])
+        current_vol = float(hist['Volume'].iloc[-1])
         
-        # 少ない日数でも計算できるように修正
         avg_vol_100 = hist['Volume'][-100:].mean() if len(hist) >= 100 else hist['Volume'].mean()
-        shares = info.get('sharesOutstanding', 0)
-        market_cap_oku = (info.get('marketCap', 0) or (current_price * shares)) / 1e8
+        
+        # 🚨 2. None対策: yfinanceが発行済株式数や時価総額にNoneを返してくることによる計算エラー(TypeError)を防ぐ
+        shares = info.get('sharesOutstanding')
+        shares = float(shares) if shares is not None else 0.0
+        
+        mc = info.get('marketCap')
+        mc = float(mc) if mc is not None else (current_price * shares)
+        market_cap_oku = mc / 1e8
         
         is_tob = False
         if len(hist) >= 5:
             recent_5 = hist.tail(5)
-            if (recent_5['High'].max() - recent_5['Low'].min()) / current_price * 100 < 1.0 and current_vol > 10000:
+            if current_price > 0 and (recent_5['High'].max() - recent_5['Low'].min()) / current_price * 100 < 1.0 and current_vol > 10000:
                 is_tob = True
 
-        div_rate = info.get('dividendRate') or info.get('trailingAnnualDividendRate') or 0
-        payout = info.get('payoutRatio', 0) or 0
+        div_rate = info.get('dividendRate') or info.get('trailingAnnualDividendRate')
+        div_rate = float(div_rate) if div_rate is not None else 0.0
+        
+        payout = info.get('payoutRatio')
+        payout = float(payout) if payout is not None else 0.0
+        
         if div_rate > 0 and current_price > 0:
             yield_str = f"{(div_rate / current_price) * 100:.2f}%"
             dividend_text = f"{div_rate}円 (利回り: {yield_str} / 配当性向: {payout*100:.1f}%)"
         else:
             dividend_text = "無配"
 
-        turnover = (current_vol / shares * 100) if shares else 0
+        turnover = (current_vol / shares * 100) if shares > 0 else 0
         if turnover >= 10: turn_str = f"🔥🔥🔥 {turnover:.2f}% (超異常値)"
         elif turnover >= 5: turn_str = f"🔥🔥 {turnover:.2f}% (大口介入期待)"
         elif turnover >= 2: turn_str = f"🔥 {turnover:.2f}% (動意)"
@@ -207,12 +216,16 @@ def evaluate_stock(ticker):
 
         hist_6mo = hist.tail(125)
         
-        # 🚨 pd.cutのエラー回避：ユニークな価格が2つ以上ある場合のみ分割
-        if len(hist_6mo['Close'].unique()) > 1:
-            bins_count = min(15, len(hist_6mo['Close'].unique()))
-            price_bins = pd.cut(hist_6mo['Close'], bins=bins_count)
-            max_vol_price = hist_6mo.groupby(price_bins, observed=False)['Volume'].sum().idxmax().mid
-        else:
+        # 🚨 3. pd.cutによる価格帯分割のエラーをさらに強固に回避
+        try:
+            unique_prices = hist_6mo['Close'].unique()
+            if len(unique_prices) > 1:
+                bins_count = min(15, len(unique_prices))
+                price_bins = pd.cut(hist_6mo['Close'], bins=bins_count)
+                max_vol_price = hist_6mo.groupby(price_bins, observed=False)['Volume'].sum().idxmax().mid
+            else:
+                max_vol_price = current_price
+        except Exception:
             max_vol_price = current_price
 
         if max_vol_price > 0:
@@ -226,12 +239,13 @@ def evaluate_stock(ticker):
             "コード": ticker.replace(".T",""), "銘柄名": jpx_names.get(ticker.replace(".T",""), ticker),
             "現在値": int(current_price), "時価総額_表示": format_market_cap(market_cap_oku),
             "dividend_text": dividend_text, "turnover_str": turn_str, "ランク": "S" if score > 80 else "A" if score > 60 else "B",
-            "乖離率": deviation, "hist": hist, "max_vol_price": max_vol_price, "recent_20_low": hist['Low'][-20:].min() if len(hist) >= 20 else hist['Low'].min(),
-            "intervention_score": score, "safe_judgment": "🚀 安全圏" if 0 < deviation < 10 else "📉 割安" if deviation < 0 else "⚠️ 警戒",
+            "乖離率": float(deviation), "hist": hist, "max_vol_price": float(max_vol_price), "recent_20_low": float(hist['Low'][-20:].min()) if len(hist) >= 20 else float(hist['Low'].min()),
+            "intervention_score": int(score), "safe_judgment": "🚀 安全圏" if 0 < deviation < 10 else "📉 割安" if deviation < 0 else "⚠️ 警戒",
             "is_tob_suspected": is_tob, "star_rating": stars
         }
     except Exception as e:
-        return None
+        # 🚨 万が一別の原因でエラーが起きても、原因を画面に返す
+        return f"ERROR:{str(e)}"
 
 # ==========================================
 # 画面描画
@@ -290,9 +304,14 @@ def show_main_page():
                     for c in codes:
                         res = evaluate_stock(f"{c}.T")
                         
-                        # 🚨 返り値に応じてエラーメッセージを出し分ける
-                        if res == "NOT_FOUND":
-                            st.error(f"❌ 【 {c} 】 : 存在しない銘柄です。")
+                        # 🚨 返り値の文字列判定で、存在しない銘柄とシステムエラーを明確に分ける
+                        if isinstance(res, str):
+                            if res == "NOT_FOUND":
+                                st.error(f"❌ 【 {c} 】 : 存在しない銘柄です。")
+                            elif res.startswith("ERROR:"):
+                                st.error(f"❌ 【 {c} 】 : 分析中にエラーが発生しました。({res})")
+                        
+                        # 正常にデータが取得できた場合
                         elif res is not None:
                             st.markdown('<div class="diagnosis-card-marker"></div>', unsafe_allow_html=True)
                             if res['is_tob_suspected']: st.warning("🚨 TOB・MBOの可能性が高い値動きです。")
@@ -310,6 +329,8 @@ def show_main_page():
                                 fig = go.Figure(data=[go.Candlestick(x=res['hist'].index, open=res['hist']['Open'], high=res['hist']['High'], low=res['hist']['Low'], close=res['hist']['Close'])])
                                 fig.update_layout(height=250, margin=dict(l=0,r=0,t=0,b=0), xaxis_rangeslider_visible=False)
                                 st.plotly_chart(fig, use_container_width=True)
+                        
+                        # 💡 ご指摘の通り、予期せぬエラー（None）が返ってきた時のための最後の砦
                         else:
                             st.error(f"❌ 【 {c} 】 : データが取得できませんでした。（上場直後でデータが極端に不足している等の通信エラーが発生しました）")
 
