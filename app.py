@@ -1,5 +1,5 @@
 """
-HAGETAKA SCOPE - 統合版（利回り計算修正・TOB判定・戦略室サイドバー統合）
+HAGETAKA SCOPE - 統合版（英字コード対応・柔軟入力・利回り計算修正・TOB判定・戦略室）
 """
 
 import json
@@ -150,7 +150,15 @@ def get_jpx_data():
         match = re.search(r'href="([^"]+data_j\.xls)"', res.text)
         if not match: return {}, []
         df = pd.read_excel("https://www.jpx.co.jp" + match.group(1))
-        codes = df.iloc[:, 1].apply(lambda x: str(int(float(x))) if pd.notnull(x) else "")
+        
+        # 🌟 英字入りコード対応のためのパース処理
+        def safe_code(x):
+            if pd.isnull(x): return ""
+            s = str(x).strip()
+            if s.endswith('.0'): return s[:-2] # 数値がfloatで読み込まれた場合の処置
+            return s
+            
+        codes = df.iloc[:, 1].apply(safe_code)
         return dict(zip(codes, df.iloc[:, 2])), list(codes)
     except: return {}, []
 
@@ -163,12 +171,28 @@ def format_market_cap(oku_val):
         return f"{cho}兆{oku}億円" if oku else f"{cho}兆円"
     return f"{oku_val}億円"
 
+# 🌟 全角半角・スペース・改行・大文字小文字をすべて吸収してコードを抽出する関数
+def normalize_input(input_text):
+    if not input_text: return []
+    # 全角を半角に、小文字を大文字に統一（151a -> 151A）
+    text = unicodedata.normalize('NFKC', input_text).upper()
+    # スペース、改行、カンマなどをすべて半角スペースに変換
+    text = re.sub(r'[\s,、\n\r]+', ' ', text)
+    # 分割して空白を除去
+    codes = [c.strip() for c in text.split(' ') if c.strip()]
+    # 重複を削除して返す（順序は維持）
+    return list(dict.fromkeys(codes))
+
 @st.cache_data(ttl=900, show_spinner=False)
 def evaluate_stock(ticker):
     try:
         stock = yf.Ticker(ticker)
         hist = stock.history(period="2y")
-        if len(hist) < 30: return None
+        
+        # 🚨 データが存在しない、または上場直後で少なすぎる場合は None を返す
+        if hist.empty or len(hist) < 30: 
+            return None
+            
         info = stock.info
         current_price = hist['Close'].iloc[-1]
         current_vol = hist['Volume'].iloc[-1]
@@ -183,7 +207,7 @@ def evaluate_stock(ticker):
             if (recent_5['High'].max() - recent_5['Low'].min()) / current_price * 100 < 1.0 and current_vol > 10000:
                 is_tob = True
 
-        # 利回り計算（修正ポイント）
+        # 利回り計算
         div_rate = info.get('dividendRate') or info.get('trailingAnnualDividendRate') or 0
         payout = info.get('payoutRatio', 0) or 0
         if div_rate > 0 and current_price > 0:
@@ -269,28 +293,40 @@ def show_main_page():
     with tab2:
         st.markdown("##### 🔍 銘柄診断（複数可）")
         with st.form("diag"):
-            codes = st.text_input("銘柄コード", placeholder="7011 9984").split()
-            if st.form_submit_button("🦅 ハゲタカAIで診断する") and codes:
-                for c in codes[:5]:
-                    res = evaluate_stock(f"{c}.T")
-                    if res:
-                        st.markdown('<div class="diagnosis-card-marker"></div>', unsafe_allow_html=True)
-                        if res['is_tob_suspected']: st.warning("🚨 TOB・MBOの可能性が高い値動きです。")
-                        col1, col2 = st.columns([1, 2])
-                        with col1:
-                            st.subheader(f"{res['コード']} {res['銘柄名']}")
-                            st.write(f"判定: **{res['ランク']}**")
-                            st.write(f"利回り: {res['dividend_text']}")
-                            st.write(f"熱量: {res['turnover_str']}")
-                            st.write(f"介入期待度: {res['intervention_score']}%")
-                            st.progress(res['intervention_score']/100)
-                        with col2:
-                            st.write(f"上値余地: {res['star_rating']}")
-                            st.info(f"安全性: {res['safe_judgment']} (壁から {res['乖離率']:.1f}%)")
-                            # チャート簡易表示
-                            fig = go.Figure(data=[go.Candlestick(x=res['hist'].index, open=res['hist']['Open'], high=res['hist']['High'], low=res['hist']['Low'], close=res['hist']['Close'])])
-                            fig.update_layout(height=250, margin=dict(l=0,r=0,t=0,b=0), xaxis_rangeslider_visible=False)
-                            st.plotly_chart(fig, use_container_width=True)
+            # 🌟 入力欄をテキストエリアに変更（改行入力に対応）
+            input_text = st.text_area("銘柄コード", placeholder="例: 7011 7203\n151a 151A\n改行やスペース区切りで入力")
+            submit = st.form_submit_button("🦅 ハゲタカAIで診断する")
+            
+            if submit and input_text:
+                codes = normalize_input(input_text)
+                if not codes:
+                    st.error("銘柄コードを入力してください")
+                elif len(codes) > 5:
+                    st.error("⚠️ サーバー負荷軽減のため、一度に診断できるのは最大5銘柄までです。銘柄数を減らして再度お試しください。")
+                else:
+                    for c in codes:
+                        res = evaluate_stock(f"{c}.T")
+                        if res:
+                            st.markdown('<div class="diagnosis-card-marker"></div>', unsafe_allow_html=True)
+                            if res['is_tob_suspected']: st.warning("🚨 TOB・MBOの可能性が高い値動きです。")
+                            col1, col2 = st.columns([1, 2])
+                            with col1:
+                                st.subheader(f"{res['コード']} {res['銘柄名']}")
+                                st.write(f"判定: **{res['ランク']}**")
+                                st.write(f"利回り: {res['dividend_text']}")
+                                st.write(f"熱量: {res['turnover_str']}")
+                                st.write(f"介入期待度: {res['intervention_score']}%")
+                                st.progress(res['intervention_score']/100)
+                            with col2:
+                                st.write(f"上値余地: {res['star_rating']}")
+                                st.info(f"安全性: {res['safe_judgment']} (壁から {res['乖離率']:.1f}%)")
+                                # チャート簡易表示
+                                fig = go.Figure(data=[go.Candlestick(x=res['hist'].index, open=res['hist']['Open'], high=res['hist']['High'], low=res['hist']['Low'], close=res['hist']['Close'])])
+                                fig.update_layout(height=250, margin=dict(l=0,r=0,t=0,b=0), xaxis_rangeslider_visible=False)
+                                st.plotly_chart(fig, use_container_width=True)
+                        else:
+                            # 🌟 存在しない銘柄の確実なエラー表示
+                            st.error(f"❌ 【 {c} 】 : 存在しない銘柄です。（または上場直後でデータが不足しています）")
 
     with tab3:
         email = st.text_input("Gmail", value=st.session_state.get("email_address", ""))
