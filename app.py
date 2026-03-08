@@ -1,5 +1,5 @@
 """
-HAGETAKA SCOPE - 統合版（英字コード完全対応・上場直後銘柄対応・エラー確実表示）
+HAGETAKA SCOPE - 統合版（英字コード完全対応・高度キャッシュシステム搭載）
 """
 
 import json
@@ -160,23 +160,38 @@ def normalize_input(input_text):
     codes = [c.strip() for c in text.split(' ') if c.strip()]
     return list(dict.fromkeys(codes))
 
-@st.cache_data(ttl=900, show_spinner=False)
+
+# 🚨 成功したデータのみを保持するカスタムキャッシュ領域
+_SUCCESS_CACHE = {}
+_CACHE_TTL_SECONDS = 900  # 15分（ブロック回避のための保護期間）
+
 def evaluate_stock(ticker):
+    now = datetime.now(JST)
+    
+    # 1. キャッシュの確認（成功データのみがここを通る）
+    if ticker in _SUCCESS_CACHE:
+        cached_time, cached_data = _SUCCESS_CACHE[ticker]
+        if (now - cached_time).total_seconds() < _CACHE_TTL_SECONDS:
+            return cached_data
+
+    # 2. 実際のデータ取得と計算
     try:
         stock = yf.Ticker(ticker)
         hist = stock.history(period="2y")
         
-        # 🚨 1. データが全く存在しない場合は「NOT_FOUND」として返す
         if hist is None or hist.empty: 
-            return "NOT_FOUND"
+            return {"status": "not_found"}
             
         info = stock.info or {}
-        current_price = float(hist['Close'].iloc[-1])
-        current_vol = float(hist['Volume'].iloc[-1])
+        
+        try:
+            current_price = float(hist['Close'].iloc[-1])
+            current_vol = float(hist['Volume'].iloc[-1])
+        except IndexError:
+            return {"status": "not_found"}
         
         avg_vol_100 = hist['Volume'][-100:].mean() if len(hist) >= 100 else hist['Volume'].mean()
         
-        # 🚨 2. None対策: yfinanceが発行済株式数や時価総額にNoneを返してくることによる計算エラー(TypeError)を防ぐ
         shares = info.get('sharesOutstanding')
         shares = float(shares) if shares is not None else 0.0
         
@@ -216,7 +231,6 @@ def evaluate_stock(ticker):
 
         hist_6mo = hist.tail(125)
         
-        # 🚨 3. pd.cutによる価格帯分割のエラーをさらに強固に回避
         try:
             unique_prices = hist_6mo['Close'].unique()
             if len(unique_prices) > 1:
@@ -228,24 +242,27 @@ def evaluate_stock(ticker):
         except Exception:
             max_vol_price = current_price
 
-        if max_vol_price > 0:
-            deviation = ((current_price - max_vol_price) / max_vol_price) * 100
-        else:
-            deviation = 0.0
+        deviation = ((current_price - max_vol_price) / max_vol_price) * 100 if max_vol_price > 0 else 0.0
         
         stars = "★" * min(5, int((max_vol_price/current_price-1)*10)+1) if current_price < max_vol_price else "★★★★★"
 
-        return {
+        result = {
+            "status": "success",
             "コード": ticker.replace(".T",""), "銘柄名": jpx_names.get(ticker.replace(".T",""), ticker),
             "現在値": int(current_price), "時価総額_表示": format_market_cap(market_cap_oku),
             "dividend_text": dividend_text, "turnover_str": turn_str, "ランク": "S" if score > 80 else "A" if score > 60 else "B",
-            "乖離率": float(deviation), "hist": hist, "max_vol_price": float(max_vol_price), "recent_20_low": float(hist['Low'][-20:].min()) if len(hist) >= 20 else float(hist['Low'].min()),
+            "乖離率": float(deviation), "hist": hist, "max_vol_price": float(max_vol_price), 
+            "recent_20_low": float(hist['Low'][-20:].min()) if len(hist) >= 20 else float(hist['Low'].min()),
             "intervention_score": int(score), "safe_judgment": "🚀 安全圏" if 0 < deviation < 10 else "📉 割安" if deviation < 0 else "⚠️ 警戒",
             "is_tob_suspected": is_tob, "star_rating": stars
         }
+        
+        # 🚨 3. 成功した場合にのみ、15分キャッシュ領域へ保存
+        _SUCCESS_CACHE[ticker] = (now, result)
+        return result
+        
     except Exception as e:
-        # 🚨 万が一別の原因でエラーが起きても、原因を画面に返す
-        return f"ERROR:{str(e)}"
+        return {"status": "error", "message": str(e)}
 
 # ==========================================
 # 画面描画
@@ -304,15 +321,14 @@ def show_main_page():
                     for c in codes:
                         res = evaluate_stock(f"{c}.T")
                         
-                        # 🚨 返り値の文字列判定で、存在しない銘柄とシステムエラーを明確に分ける
-                        if isinstance(res, str):
-                            if res == "NOT_FOUND":
-                                st.error(f"❌ 【 {c} 】 : 存在しない銘柄です。")
-                            elif res.startswith("ERROR:"):
-                                st.error(f"❌ 【 {c} 】 : 分析中にエラーが発生しました。({res})")
+                        # 🚨 厳密にステータスを判定して表示を分ける
+                        if res["status"] == "not_found":
+                            st.error(f"❌ 【 {c} 】 : 存在しない銘柄です。")
                         
-                        # 正常にデータが取得できた場合
-                        elif res is not None:
+                        elif res["status"] == "error":
+                            st.error(f"❌ 【 {c} 】 : 分析中に通信・計算エラーが発生しました。({res.get('message', '')})")
+                        
+                        elif res["status"] == "success":
                             st.markdown('<div class="diagnosis-card-marker"></div>', unsafe_allow_html=True)
                             if res['is_tob_suspected']: st.warning("🚨 TOB・MBOの可能性が高い値動きです。")
                             col1, col2 = st.columns([1, 2])
@@ -329,10 +345,6 @@ def show_main_page():
                                 fig = go.Figure(data=[go.Candlestick(x=res['hist'].index, open=res['hist']['Open'], high=res['hist']['High'], low=res['hist']['Low'], close=res['hist']['Close'])])
                                 fig.update_layout(height=250, margin=dict(l=0,r=0,t=0,b=0), xaxis_rangeslider_visible=False)
                                 st.plotly_chart(fig, use_container_width=True)
-                        
-                        # 💡 ご指摘の通り、予期せぬエラー（None）が返ってきた時のための最後の砦
-                        else:
-                            st.error(f"❌ 【 {c} 】 : データが取得できませんでした。（上場直後でデータが極端に不足している等の通信エラーが発生しました）")
 
     with tab3:
         email = st.text_input("Gmail", value=st.session_state.get("email_address", ""))
