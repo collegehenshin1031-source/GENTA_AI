@@ -60,10 +60,10 @@ header { visibility: hidden !important; display: none !important; }
 
 /* カードデザイン */
 .spike-card{
-  background-color: var(--secondary-background-color) !important; 
-  border-radius: 16px; padding: 1rem; margin-bottom: .75rem; 
-  border: 1px solid rgba(128,128,128,0.2) !important;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+    background-color: var(--secondary-background-color) !important; 
+    border-radius: 16px; padding: 1rem; margin-bottom: .75rem; 
+    border: 1px solid rgba(128,128,128,0.2) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.05);
 }
 .ticker-name a{ font-weight: 800; color: var(--text-color) !important; text-decoration:none; font-size: 1.1rem; }
 .price-val { color: #ff4b4b !important; font-weight: 800; }
