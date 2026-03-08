@@ -1,5 +1,5 @@
 """
-HAGETAKA SCOPE - 統合版（英字コード対応・柔軟入力・利回り計算修正・TOB判定・戦略室）
+HAGETAKA SCOPE - 統合版（英字コード完全対応・上場直後銘柄対応・エラー確実表示）
 """
 
 import json
@@ -68,7 +68,6 @@ header { visibility: hidden !important; display: none !important; }
 .ticker-name a{ font-weight: 800; color: var(--text-color) !important; text-decoration:none; font-size: 1.1rem; }
 .price-val { color: #ff4b4b !important; font-weight: 800; }
 .level-badge { padding: 3px 10px; border-radius: 12px; font-size: 0.75rem; font-weight: 700; color: white !important; }
-.tag-watch { background: rgba(92,107,192,0.15); color: #5C6BC0 !important; padding: 2px 8px; border-radius: 999px; margin-right: 6px; font-weight: 700; display: inline-block; }
 
 /* 診断カード枠 */
 div[data-testid="stVerticalBlock"]:has(> div:nth-child(1) .diagnosis-card-marker) {
@@ -85,25 +84,9 @@ div[data-testid="stVerticalBlock"]:has(> div:nth-child(1) .diagnosis-card-marker
 # 共通ヘルパー関数
 # ==========================================
 
-def _norm_label(s) -> str:
-    if s is None: return ""
-    return str(s).strip()
-
 def get_fernet() -> Fernet: return Fernet(st.secrets["encryption"]["key"].encode())
-def decrypt_password(pw: str) -> str: 
-    try: return get_fernet().decrypt(pw.encode()).decode() if pw else ""
-    except: return ""
 
 def get_gsheets_connection(): return st.connection("gsheets", type=GSheetsConnection)
-
-def load_settings_by_email(email: str) -> Optional[Dict]:
-    try:
-        df = get_gsheets_connection().read(worksheet="settings", usecols=[0, 1], ttl=0)
-        df.columns = ["email", "encrypted_password"]
-        row = df[df["email"].str.lower().str.strip() == email.lower().strip()]
-        if not row.empty: return {"email": row.iloc[0]["email"], "encrypted_password": row.iloc[0]["encrypted_password"]}
-    except: pass
-    return None
 
 def get_gspread_client():
     try:
@@ -151,11 +134,10 @@ def get_jpx_data():
         if not match: return {}, []
         df = pd.read_excel("https://www.jpx.co.jp" + match.group(1))
         
-        # 🌟 英字入りコード対応のためのパース処理
         def safe_code(x):
             if pd.isnull(x): return ""
             s = str(x).strip()
-            if s.endswith('.0'): return s[:-2] # 数値がfloatで読み込まれた場合の処置
+            if s.endswith('.0'): return s[:-2]
             return s
             
         codes = df.iloc[:, 1].apply(safe_code)
@@ -171,16 +153,11 @@ def format_market_cap(oku_val):
         return f"{cho}兆{oku}億円" if oku else f"{cho}兆円"
     return f"{oku_val}億円"
 
-# 🌟 全角半角・スペース・改行・大文字小文字をすべて吸収してコードを抽出する関数
 def normalize_input(input_text):
     if not input_text: return []
-    # 全角を半角に、小文字を大文字に統一（151a -> 151A）
     text = unicodedata.normalize('NFKC', input_text).upper()
-    # スペース、改行、カンマなどをすべて半角スペースに変換
     text = re.sub(r'[\s,、\n\r]+', ' ', text)
-    # 分割して空白を除去
     codes = [c.strip() for c in text.split(' ') if c.strip()]
-    # 重複を削除して返す（順序は維持）
     return list(dict.fromkeys(codes))
 
 @st.cache_data(ttl=900, show_spinner=False)
@@ -189,25 +166,25 @@ def evaluate_stock(ticker):
         stock = yf.Ticker(ticker)
         hist = stock.history(period="2y")
         
-        # 🚨 データが存在しない、または上場直後で少なすぎる場合は None を返す
-        if hist.empty or len(hist) < 30: 
+        # 🚨 修正ポイント：日数が少なくてもエラーにせず、最低5日あれば計算を通す
+        if hist.empty or len(hist) < 5: 
             return None
             
         info = stock.info
         current_price = hist['Close'].iloc[-1]
         current_vol = hist['Volume'].iloc[-1]
-        avg_vol_100 = hist['Volume'][-100:].mean()
+        
+        # 少ない日数でも計算できるように修正
+        avg_vol_100 = hist['Volume'][-100:].mean() if len(hist) >= 100 else hist['Volume'].mean()
         shares = info.get('sharesOutstanding', 0)
         market_cap_oku = (info.get('marketCap', 0) or (current_price * shares)) / 1e8
         
-        # TOB判定
         is_tob = False
         if len(hist) >= 5:
             recent_5 = hist.tail(5)
             if (recent_5['High'].max() - recent_5['Low'].min()) / current_price * 100 < 1.0 and current_vol > 10000:
                 is_tob = True
 
-        # 利回り計算
         div_rate = info.get('dividendRate') or info.get('trailingAnnualDividendRate') or 0
         payout = info.get('payoutRatio', 0) or 0
         if div_rate > 0 and current_price > 0:
@@ -216,21 +193,18 @@ def evaluate_stock(ticker):
         else:
             dividend_text = "無配"
 
-        # 商い熱量
         turnover = (current_vol / shares * 100) if shares else 0
         if turnover >= 10: turn_str = f"🔥🔥🔥 {turnover:.2f}% (超異常値)"
         elif turnover >= 5: turn_str = f"🔥🔥 {turnover:.2f}% (大口介入期待)"
         elif turnover >= 2: turn_str = f"🔥 {turnover:.2f}% (動意)"
         else: turn_str = f"💤 {turnover:.2f}% (平常)"
 
-        # 介入度スコア
         score = 10
         if 500 <= market_cap_oku <= 2000: score += 35
-        if current_vol / avg_vol_100 >= 3: score += 40
-        elif current_vol / avg_vol_100 >= 1.5: score += 25
+        if avg_vol_100 > 0 and current_vol / avg_vol_100 >= 3: score += 40
+        elif avg_vol_100 > 0 and current_vol / avg_vol_100 >= 1.5: score += 25
         score = min(90, score)
 
-        # 上値余地（需給の壁）
         hist_6mo = hist.tail(125)
         price_bins = pd.cut(hist_6mo['Close'], bins=15)
         max_vol_price = hist_6mo.groupby(price_bins, observed=False)['Volume'].sum().idxmax().mid
@@ -242,7 +216,7 @@ def evaluate_stock(ticker):
             "コード": ticker.replace(".T",""), "銘柄名": jpx_names.get(ticker.replace(".T",""), ticker),
             "現在値": int(current_price), "時価総額_表示": format_market_cap(market_cap_oku),
             "dividend_text": dividend_text, "turnover_str": turn_str, "ランク": "S" if score > 80 else "A" if score > 60 else "B",
-            "乖離率": deviation, "hist": hist, "max_vol_price": max_vol_price, "recent_20_low": hist['Low'][-20:].min(),
+            "乖離率": deviation, "hist": hist, "max_vol_price": max_vol_price, "recent_20_low": hist['Low'][-20:].min() if len(hist) >= 20 else hist['Low'].min(),
             "intervention_score": score, "safe_judgment": "🚀 安全圏" if 0 < deviation < 10 else "📉 割安" if deviation < 0 else "⚠️ 警戒",
             "is_tob_suspected": is_tob, "star_rating": stars
         }
@@ -253,7 +227,6 @@ def evaluate_stock(ticker):
 # ==========================================
 
 def show_main_page():
-    # サイドバー：戦略室
     st.sidebar.title("🦅 ハゲタカ戦略室")
     st.sidebar.markdown(f"""
     <div style='border: 1px solid #ff4b4b; border-radius: 10px; padding: 12px; background: rgba(255,75,75,0.05);'>
@@ -293,7 +266,6 @@ def show_main_page():
     with tab2:
         st.markdown("##### 🔍 銘柄診断（複数可）")
         with st.form("diag"):
-            # 🌟 入力欄をテキストエリアに変更（改行入力に対応）
             input_text = st.text_area("銘柄コード", placeholder="例: 7011 7203\n151a 151A\n改行やスペース区切りで入力")
             submit = st.form_submit_button("🦅 ハゲタカAIで診断する")
             
@@ -320,13 +292,12 @@ def show_main_page():
                             with col2:
                                 st.write(f"上値余地: {res['star_rating']}")
                                 st.info(f"安全性: {res['safe_judgment']} (壁から {res['乖離率']:.1f}%)")
-                                # チャート簡易表示
                                 fig = go.Figure(data=[go.Candlestick(x=res['hist'].index, open=res['hist']['Open'], high=res['hist']['High'], low=res['hist']['Low'], close=res['hist']['Close'])])
                                 fig.update_layout(height=250, margin=dict(l=0,r=0,t=0,b=0), xaxis_rangeslider_visible=False)
                                 st.plotly_chart(fig, use_container_width=True)
                         else:
-                            # 🌟 存在しない銘柄の確実なエラー表示
-                            st.error(f"❌ 【 {c} 】 : 存在しない銘柄です。（または上場直後でデータが不足しています）")
+                            # 🚨 ここが確実に表示されるように修正しました
+                            st.error(f"❌ 【 {c} 】 : データが取得できませんでした。（存在しない銘柄、または上場直後でデータが不足しています）")
 
     with tab3:
         email = st.text_input("Gmail", value=st.session_state.get("email_address", ""))
