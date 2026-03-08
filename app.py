@@ -166,9 +166,9 @@ def evaluate_stock(ticker):
         stock = yf.Ticker(ticker)
         hist = stock.history(period="2y")
         
-        # 🚨 修正ポイント：日数が少なくてもエラーにせず、最低5日あれば計算を通す
-        if hist.empty or len(hist) < 5: 
-            return None
+        # 🚨 存在しない銘柄の場合は専用のフラグを返す
+        if hist.empty: 
+            return "NOT_FOUND"
             
         info = stock.info
         current_price = hist['Close'].iloc[-1]
@@ -206,9 +206,19 @@ def evaluate_stock(ticker):
         score = min(90, score)
 
         hist_6mo = hist.tail(125)
-        price_bins = pd.cut(hist_6mo['Close'], bins=15)
-        max_vol_price = hist_6mo.groupby(price_bins, observed=False)['Volume'].sum().idxmax().mid
-        deviation = ((current_price - max_vol_price) / max_vol_price) * 100
+        
+        # 🚨 pd.cutのエラー回避：ユニークな価格が2つ以上ある場合のみ分割
+        if len(hist_6mo['Close'].unique()) > 1:
+            bins_count = min(15, len(hist_6mo['Close'].unique()))
+            price_bins = pd.cut(hist_6mo['Close'], bins=bins_count)
+            max_vol_price = hist_6mo.groupby(price_bins, observed=False)['Volume'].sum().idxmax().mid
+        else:
+            max_vol_price = current_price
+
+        if max_vol_price > 0:
+            deviation = ((current_price - max_vol_price) / max_vol_price) * 100
+        else:
+            deviation = 0.0
         
         stars = "★" * min(5, int((max_vol_price/current_price-1)*10)+1) if current_price < max_vol_price else "★★★★★"
 
@@ -220,7 +230,8 @@ def evaluate_stock(ticker):
             "intervention_score": score, "safe_judgment": "🚀 安全圏" if 0 < deviation < 10 else "📉 割安" if deviation < 0 else "⚠️ 警戒",
             "is_tob_suspected": is_tob, "star_rating": stars
         }
-    except: return None
+    except Exception as e:
+        return None
 
 # ==========================================
 # 画面描画
@@ -278,7 +289,11 @@ def show_main_page():
                 else:
                     for c in codes:
                         res = evaluate_stock(f"{c}.T")
-                        if res:
+                        
+                        # 🚨 返り値に応じてエラーメッセージを出し分ける
+                        if res == "NOT_FOUND":
+                            st.error(f"❌ 【 {c} 】 : 存在しない銘柄です。")
+                        elif res is not None:
                             st.markdown('<div class="diagnosis-card-marker"></div>', unsafe_allow_html=True)
                             if res['is_tob_suspected']: st.warning("🚨 TOB・MBOの可能性が高い値動きです。")
                             col1, col2 = st.columns([1, 2])
@@ -296,8 +311,7 @@ def show_main_page():
                                 fig.update_layout(height=250, margin=dict(l=0,r=0,t=0,b=0), xaxis_rangeslider_visible=False)
                                 st.plotly_chart(fig, use_container_width=True)
                         else:
-                            # 🚨 ここが確実に表示されるように修正しました
-                            st.error(f"❌ 【 {c} 】 : データが取得できませんでした。（存在しない銘柄、または上場直後でデータが不足しています）")
+                            st.error(f"❌ 【 {c} 】 : データが取得できませんでした。（上場直後でデータが極端に不足している等の通信エラーが発生しました）")
 
     with tab3:
         email = st.text_input("Gmail", value=st.session_state.get("email_address", ""))
