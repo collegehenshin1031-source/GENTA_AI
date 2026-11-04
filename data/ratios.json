@@ -1,6 +1,6 @@
 {
-  "updated_at": "2026-11-04 00:25:41",
-  "date": "2026-11-04",
+  "updated_at": "2026-11-05 00:41:36",
+  "date": "2026-11-05",
   "total_count": 1,
   "data": {
     "9997.T": {
@@ -12,11 +12,11 @@
       "shares_outstanding": 96174600,
       "volume_of_shares_pct": 0.294,
       "price_change_5d": -0.39,
-      "market_cap_oku": 972,
-      "pbr": 0.64,
+      "market_cap_oku": 987,
+      "pbr": 0.65,
       "in_cap_range": true,
       "level": 2,
-      "ma_score": 53.2,
+      "ma_score": 53.7,
       "flow_score": 40.6,
       "flow_details": {
         "flow_score": 40.6,
@@ -27,7 +27,7 @@
         "lower_shadow": 51.4
       },
       "flow_streak_high": 0,
-      "reorg_score": 87.4,
+      "reorg_score": 88.5,
       "event_score": 0.0,
       "display_state": "観測中",
       "support_price": 1031.9,
@@ -48,11 +48,11 @@
       "shares_outstanding": 96174600,
       "volume_of_shares_pct": 0.294,
       "price_change_5d": -0.39,
-      "market_cap_oku": 972,
-      "pbr": 0.64,
+      "market_cap_oku": 987,
+      "pbr": 0.65,
       "in_cap_range": true,
       "level": 2,
-      "ma_score": 53.2,
+      "ma_score": 53.7,
       "flow_score": 40.6,
       "flow_details": {
         "flow_score": 40.6,
@@ -63,7 +63,7 @@
         "lower_shadow": 51.4
       },
       "flow_streak_high": 0,
-      "reorg_score": 87.4,
+      "reorg_score": 88.5,
       "event_score": 0.0,
       "display_state": "観測中",
       "support_price": 1031.9,
@@ -82,11 +82,11 @@
       "shares_outstanding": 52366884,
       "volume_of_shares_pct": 0.267,
       "price_change_5d": -3.39,
-      "market_cap_oku": 1225,
-      "pbr": 1.06,
+      "market_cap_oku": 1256,
+      "pbr": 1.09,
       "in_cap_range": true,
       "level": 1,
-      "ma_score": 41.5,
+      "ma_score": 40.6,
       "flow_score": 16.9,
       "flow_details": {
         "flow_score": 16.9,
@@ -97,7 +97,7 @@
         "lower_shadow": 40.1
       },
       "flow_streak_high": 0,
-      "reorg_score": 84.7,
+      "reorg_score": 82.5,
       "event_score": 0.0,
       "display_state": "観測中",
       "support_price": 2338.8,
